@@ -12,6 +12,9 @@
       },
       "Unit tests": {
         "$path": "unit"
+      },
+      "Editor":{
+        "$path":"editor-src"
       }
     },
 
