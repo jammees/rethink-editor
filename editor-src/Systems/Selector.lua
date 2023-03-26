@@ -22,7 +22,7 @@ function Selector.Start()
 			end
 
 			Selector.Selected = object
-			object.ZIndex = 9999999
+			--object.ZIndex = 9999999
 
 			Selector.Triggered:Fire(object)
 
