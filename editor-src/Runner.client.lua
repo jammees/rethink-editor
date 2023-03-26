@@ -5,6 +5,7 @@ local ActionMenuSystem = require(systems.ActionMenu)
 local MouseSystem = require(systems.Mouse)
 local SelectorSystem = require(systems.Selector)
 local ManipulationSystem = require(systems.Manipulation)
+local LoggerSystem = require(systems.Logger)
 
 local toolbar = plugin:CreateToolbar("Editor")
 local editorButton = toolbar:CreateButton("__rethink_editor_button", "Opens/Closes the editor.", "rbxassetid://0")
@@ -17,6 +18,8 @@ window.Name = "RethinkEditor"
 
 -- Initialize systems
 ActionMenuSystem.Init(plugin)
+LoggerSystem.Init(plugin)
+ManipulationSystem.Init()
 
 local isOpen = false
 
@@ -29,17 +32,22 @@ editorButton.Click:Connect(function()
 		MouseSystem.Start()
 		SelectorSystem.Start()
 		ManipulationSystem.Start()
+		LoggerSystem.Start()
 
 		window.Enabled = true
+
+		LoggerSystem.Log("Successfully initialized systems!")
 
 		return
 	end
 
 	window.Enabled = false
+	LoggerSystem.ToggleConsoleState(false)
 
 	UserInterfaceSystem.Destroy()
 	ActionMenuSystem.Destroy()
 	MouseSystem.Destroy()
 	SelectorSystem.Destroy()
 	ManipulationSystem.Destroy()
+	LoggerSystem.Destroy()
 end)
