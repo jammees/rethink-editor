@@ -1,9 +1,14 @@
 local library = script.Parent.Parent.Library
 
+local LoggerSystem = require(script.Parent.Logger)
+
 local Janitor = require(library.Janitor).new()
+
+local ToolbarUI = require(script.Toolbar)
 
 local Fusion = require(library.Fusion)
 local Children = Fusion.Children
+local OnEvent = Fusion.OnEvent
 local New = Fusion.New
 
 local UserInterface = {}
@@ -30,7 +35,6 @@ function UserInterface.Start(window: DockWidgetPluginGui)
 				BackgroundTransparency = 1,
 				TextTransparency = 1,
 				AutoButtonColor = false,
-				ZIndex = 2,
 				Name = "Detector",
 			}),
 
@@ -46,14 +50,7 @@ function UserInterface.Start(window: DockWidgetPluginGui)
 						BackgroundColor3 = Color3.fromRGB(22, 22, 22),
 					}),
 
-					Toolbar = New("Frame")({
-						Name = "Toolbar",
-						Size = UDim2.new(1, 0, 0, 100),
-						Position = UDim2.fromOffset(0, 30),
-						BackgroundColor3 = Color3.fromRGB(32, 32, 32),
-
-						-- TODO: Padding, List and dynamically create buttons
-					}),
+					Toolbar = ToolbarUI(),
 				},
 			}),
 		},
