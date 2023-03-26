@@ -2,12 +2,14 @@ local library = script.Parent.Parent.Library
 
 local UserInterfaceSystem = require(script.Parent.UserInterface)
 local MouseSystem = require(script.Parent.Mouse)
+local LoggerSystem = require(script.Parent.Logger)
 
 local Signal = require(library.Signal)
 local Janitor = require(library.Janitor).new()
 local DefaultProperties = require(script.DefaultProperties)
 
 local entries = {}
+local entriesHash = {}
 
 local Object = {}
 Object.Added = Signal.new()
@@ -17,7 +19,11 @@ function Object.New(type: string)
 
 	local objectReference = {
 		Type = type,
-		Properties = {},
+		ExportData = {
+			Properties = {},
+			Symbols = {},
+		},
+		EditorData = {},
 		Object = object,
 	}
 
@@ -26,8 +32,8 @@ function Object.New(type: string)
 	end
 
 	object.AnchorPoint = Vector2.new(0, 0)
-	object.Position = UDim2.fromOffset(MouseSystem.X, MouseSystem.Y)
-	object.Parent = UserInterfaceSystem.UI
+	object.Position = UDim2.fromOffset(MouseSystem.X, MouseSystem.Y - 130)
+	object.Parent = UserInterfaceSystem.UI.Workspace
 
 	local mouseDetector = Instance.new("TextButton")
 	mouseDetector.BackgroundTransparency = 1
@@ -36,11 +42,27 @@ function Object.New(type: string)
 	mouseDetector.Size = UDim2.fromScale(1, 1)
 	mouseDetector.Parent = object
 
+	objectReference.EditorData.man_MousePressedDown = false
+	objectReference.EditorData.man_dragging = { false }
+	objectReference.EditorData.man_first = true
+	objectReference.EditorData.man_OGSize = object.AbsoluteSize
+	objectReference.EditorData.man_OGPosition = object.AbsolutePosition
+	objectReference.EditorData.man_fSize = object.AbsoluteSize
+	objectReference.EditorData.man_fPosition = object.AbsolutePosition
+
 	Object.Added:Fire(object)
 
 	Janitor:Add(object)
 
-	table.insert(entries, objectReference)
+	local reservedPosition = #entries + 1
+	entries[reservedPosition] = objectReference
+	entriesHash[object] = reservedPosition
+
+	LoggerSystem.Log(`[Object] Created new {type} at entry: {reservedPosition}`)
+end
+
+function Object.GetFromObject(object: any)
+	return entries[entriesHash[object]]
 end
 
 function Object.GetAll() end
