@@ -15,6 +15,7 @@ local window = plugin:CreateDockWidgetPluginGui(
 	DockWidgetPluginGuiInfo.new(Enum.InitialDockState.Float, false, false, 1000, 500, 500, 250)
 )
 window.Name = "RethinkEditor"
+window.Title = "Rethink Editor v0.1.0"
 
 -- Initialize systems
 ActionMenuSystem.Init(plugin)
