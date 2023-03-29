@@ -19,7 +19,6 @@ Manipulation.ActiveHandler = nil
 
 function Manipulation.Init()
 	ConfigSystem.man_Mode:onChange(function(newValue)
-		print(`Mode changed from {mode} to {newValue}`)
 		mode = newValue
 
 		if Manipulation.ActiveHandler then
