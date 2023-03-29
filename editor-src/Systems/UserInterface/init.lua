@@ -57,8 +57,6 @@ function UserInterface.Start(window: DockWidgetPluginGui)
 	})
 
 	Janitor:Add(UserInterface.UI)
-
-	window.Enabled = true
 end
 
 function UserInterface.Destroy()
