@@ -51,7 +51,7 @@ function Mouse.Start()
 	end))
 end
 
-function Mouse.GetDelta(): Vector3
+function Mouse.GetDelta(): Vector2
 	return Vector2.new(Mouse.X - oldMousePosition.X, Mouse.Y - oldMousePosition.Y)
 end
 
