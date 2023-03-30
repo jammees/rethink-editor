@@ -35,6 +35,10 @@ end
 local Handler = {}
 
 function Handler.Mount(object: any)
+	if not object then
+		return
+	end
+
 	local reference = ObjectSystem.GetFromObject(object)
 	local pivotClass = require(pivots.manDrag.draggerBase).new(object)
 
