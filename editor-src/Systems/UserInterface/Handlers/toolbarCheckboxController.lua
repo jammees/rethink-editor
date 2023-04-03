@@ -21,11 +21,16 @@ return function(props: Props)
 		end
 	end
 
-	--[[ if props.Modifiers.relativeSize then
+	if props.Modifiers.relativeSize then
 		for _, checkbox in ipairs(props.Checkboxes) do
-			checkbox.Size = UDim2.fromOffset(checkbox.Size.X.Offset, checkbox.Size.Y.Offset / #props.Checkboxes)
+			checkbox.Size = UDim2.new(0, checkbox.Size.X.Offset, 1 / #props.Checkboxes)
+
+			if checkbox.AbsoluteSize.Y >= 20 then
+				checkbox.Size = UDim2.new(0, checkbox.Size.X.Offset, 0, 20)
+				print("bigger")
+			end
 		end
-	end ]]
+	end
 
 	return table.unpack(props.Checkboxes)
 end
