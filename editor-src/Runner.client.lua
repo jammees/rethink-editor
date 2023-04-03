@@ -6,6 +6,7 @@ local MouseSystem = require(systems.Mouse)
 local SelectorSystem = require(systems.Selector)
 local ManipulationSystem = require(systems.Manipulation)
 local LoggerSystem = require(systems.Logger)
+local PropertyHandlerSystem = require(systems.PropertyHandler)
 
 local toolbar = plugin:CreateToolbar("Editor")
 local editorButton = toolbar:CreateButton("__rethink_editor_button", "Opens/Closes the editor.", "rbxassetid://0")
@@ -34,6 +35,7 @@ editorButton.Click:Connect(function()
 		SelectorSystem.Start()
 		ManipulationSystem.Start()
 		LoggerSystem.Start()
+		PropertyHandlerSystem.Start()
 
 		window.Enabled = true
 
@@ -51,4 +53,5 @@ editorButton.Click:Connect(function()
 	SelectorSystem.Destroy()
 	ManipulationSystem.Destroy()
 	LoggerSystem.Destroy()
+	PropertyHandlerSystem.Destroy()
 end)
