@@ -5,6 +5,7 @@ local pivots = script.Parent.Parent.Pivots
 local MouseSystem = require(systems.Mouse)
 local ObjectSystem = require(systems.Object)
 local UserInterfaceSystem = require(systems.UserInterface)
+local ConfigSystem = require(systems.Config)
 
 local Janitor = require(library.Janitor).new()
 
@@ -68,8 +69,10 @@ function Handler.Mount(object: any)
 			man_Resize(reference, pivotClass.ActivePoint:GetRelativePosition())
 
 			object.Size = UDim2.fromOffset(reference.EditorData.man_fSize.X, reference.EditorData.man_fSize.Y)
-			object.Position =
-				UDim2.fromOffset(reference.EditorData.man_fPosition.X, reference.EditorData.man_fPosition.Y - 130) -- The reason why I remove 130 is because of the topbar
+			object.Position = UDim2.fromOffset(
+				reference.EditorData.man_fPosition.X,
+				reference.EditorData.man_fPosition.Y - ConfigSystem.ui_TopbarOffset:get()
+			) -- The reason why I remove 130 is because of the topbar
 			-- for some reason if this wouldn't exist the object would jump down exactly 130 pixels.
 
 			reference.EditorData.man_OGSize = object.AbsoluteSize
