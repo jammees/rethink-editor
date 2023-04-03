@@ -1,5 +1,4 @@
-local GRID_SIZE = 10
-
+local RunService = game:GetService("RunService")
 local library = script.Parent.Parent.Parent.Parent.Library
 local systems = script.Parent.Parent.Parent
 local pivots = script.Parent.Parent.Pivots
@@ -11,17 +10,28 @@ local ConfigSystem = require(systems.Config)
 
 local Janitor = require(library.Janitor).new()
 
-local function Snap(Input)
-	if ConfigSystem.man_SnapToGrid:get() == false then
-		return Input
-	end
+local mouseDeltaCounter = Vector2.new()
 
-	return math.round(Input / GRID_SIZE) * GRID_SIZE
+local function Snap(Input)
+	return ConfigSystem.man_SnapToGrid:get()
+			and math.floor(Input / ConfigSystem.man_GridSize:get() + 0.5) * ConfigSystem.man_GridSize:get()
+		or Input
 end
 
 local function man_DragXY(reference: any, dragX: boolean, dragY: boolean)
 	local object = reference.EditorData
 	local mouseDelta = MouseSystem.GetDelta()
+
+	if ConfigSystem.man_SnapToGrid:get() then
+		local gridSize = ConfigSystem.man_GridSize:get()
+
+		if math.abs(mouseDeltaCounter.X) >= gridSize or math.abs(mouseDeltaCounter.Y) >= gridSize then
+			mouseDelta = mouseDeltaCounter
+			mouseDeltaCounter = Vector2.new()
+		else
+			mouseDeltaCounter += mouseDelta
+		end
+	end
 
 	if dragX == 1 then
 		object.man_fPosition = Vector2.new(Snap(object.man_OGPosition.X + mouseDelta.X), object.man_fPosition.Y)
@@ -72,8 +82,10 @@ function Handler.Mount(object: any)
 		if isDragging == true then
 			man_DragXY(reference, table.unpack(dragDirection))
 
-			object.Position =
-				UDim2.fromOffset(reference.EditorData.man_fPosition.X, reference.EditorData.man_fPosition.Y - 130)
+			object.Position = UDim2.fromOffset(
+				reference.EditorData.man_fPosition.X,
+				reference.EditorData.man_fPosition.Y - ConfigSystem.ui_TopbarOffset:get()
+			)
 
 			reference.EditorData.man_OGPosition = object.AbsolutePosition
 
