@@ -24,4 +24,14 @@ return {
 			prot_uibase_obj = Vector2.new(44, 44),
 		},
 	},
+
+	-- Grabbed from Interface Tools
+	ICON_SET_ARROW = {
+		ICON_SET_ID = "rbxassetid://3926307971",
+		ICON_SET_SIZE = Vector2.new(36, 36),
+		ICON_SET_MAP = {
+			down = Vector2.new(324, 524),
+			up = Vector2.new(164, 484),
+		},
+	},
 }
