@@ -7,6 +7,7 @@ local H_createToolbarButtonBig = require(handlers.createToolbarButtonBig)
 local H_createToolbarCategory = require(handlers.createToolbarCategory)
 local H_createToolbarCheckbox = require(handlers.createToolbarCheckbox)
 local H_toolbarCheckboxController = require(handlers.toolbarCheckboxController)
+local H_createToolbarNumberField = require(handlers.createToolbarNumberField)
 
 local Fusion = require(library.Fusion)
 local Children = Fusion.Children
@@ -34,50 +35,6 @@ return function()
 				PaddingTop = UDim.new(0, 5),
 				PaddingBottom = UDim.new(0, 5),
 			}),
-
-			--[[ H_createToolbarCategory({
-				Separator = "right",
-				Title = "Object Manipulation",
-				Handlers = {
-					H_createToolbarButtonBig({
-						Title = "Resize",
-						IconIDX = 7,
-						OnClick = function()
-							if ConfigSystem.man_Mode:get() == 1 then
-								ConfigSystem.man_Mode:set(0)
-							else
-								ConfigSystem.man_Mode:set(1)
-							end
-						end,
-					}),
-
-					H_createToolbarButtonBig({
-						Title = "Drag",
-						IconIDX = 8,
-						OnClick = function()
-							if ConfigSystem.man_Mode:get() == 2 then
-								ConfigSystem.man_Mode:set(0)
-							else
-								ConfigSystem.man_Mode:set(2)
-							end
-						end,
-					}),
-				},
-			}),
-
-			H_createToolbarCategory({
-				Separator = "right",
-				dir = Enum.FillDirection.Horizontal,
-				Handlers = {
-					H_createToolbarCheckbox({
-						Title = "Snap to Grid",
-						InitialState = false,
-						OnStateChange = function(newState: boolean)
-							ConfigSystem.man_SnapToGrid:set(newState)
-						end,
-					}),
-				},
-			}), ]]
 
 			H_createToolbarCategory({
 				Separator = "right",
@@ -123,10 +80,18 @@ return function()
 											ConfigSystem.man_SnapToGrid:set(newState)
 										end,
 									}),
+
+									H_createToolbarNumberField({
+										InitialValue = ConfigSystem.man_GridSize:get(),
+										OnValueChange = function(newValue)
+											ConfigSystem.man_GridSize:set(newValue)
+										end,
+									}),
 								},
 
 								Modifiers = {
 									unifiedXSize = true,
+									--relativeSize = true,
 								},
 							}),
 						},
