@@ -24,7 +24,7 @@ return function(props: Props)
 
 	self.Object = New("TextButton")({
 		Text = "",
-		Size = UDim2.new(0, textSize.X + 50, 0, 30),
+		Size = UDim2.new(0, textSize.X + 50, 0, 20),
 		BackgroundColor3 = Color3.fromRGB(32, 32, 32),
 		AutoButtonColor = true,
 		Name = "",
@@ -32,14 +32,16 @@ return function(props: Props)
 
 		[Children] = {
 			Padding = New("UIPadding")({
-				PaddingLeft = UDim.new(0, 5),
-				PaddingTop = UDim.new(0, 5),
-				PaddingBottom = UDim.new(0, 5),
+				PaddingLeft = UDim.new(0, 3),
+				--PaddingTop = UDim.new(0, 2.5),
+				--PaddingBottom = UDim.new(0, 5),
 			}),
 
 			CheckboxContainer = New("Frame")({
-				Size = UDim2.fromOffset(20, 20),
+				Size = UDim2.fromOffset(15, 15),
 				BackgroundColor3 = Color3.fromRGB(22, 22, 22),
+				AnchorPoint = Vector2.new(0, 0.5),
+				Position = UDim2.fromScale(0, 0.5),
 				Name = "CheckboxContainer",
 
 				[Children] = {
@@ -53,7 +55,7 @@ return function(props: Props)
 						Name = "Checkmark",
 						AnchorPoint = Vector2.new(0.5, 0.5),
 						Position = UDim2.fromScale(0.5, 0.5),
-						Visible = false,
+						Visible = self.State,
 					}),
 				},
 			}),
