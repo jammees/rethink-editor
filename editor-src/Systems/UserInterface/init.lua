@@ -1,18 +1,19 @@
 local library = script.Parent.Parent.Library
 
-local LoggerSystem = require(script.Parent.Logger)
+local ConfigSystem = require(script.Parent.Config)
 
 local Janitor = require(library.Janitor).new()
 
 local ToolbarUI = require(script.Toolbar)
+local PropertyUI = require(script.Property)
 
 local Fusion = require(library.Fusion)
 local Children = Fusion.Children
-local OnEvent = Fusion.OnEvent
 local New = Fusion.New
 
 local UserInterface = {}
 UserInterface.UI = nil
+UserInterface.Handlers = script.Handlers
 
 function UserInterface.Start(window: DockWidgetPluginGui)
 	UserInterface.UI = New("Frame")({
@@ -23,14 +24,14 @@ function UserInterface.Start(window: DockWidgetPluginGui)
 
 		[Children] = {
 			Workspace = New("Frame")({
-				Size = UDim2.new(1, 0, 1, -130),
+				Size = UDim2.new(1, 0, 1, -ConfigSystem.ui_TopbarOffset:get()),
 				Position = UDim2.fromOffset(0, 130),
 				BackgroundTransparency = 1,
 				Name = "Workspace",
 			}),
 
 			Detector = New("TextButton")({
-				Size = UDim2.new(1, 0, 1, -130),
+				Size = UDim2.new(1, 0, 1, -ConfigSystem.ui_TopbarOffset:get()),
 				Position = UDim2.fromOffset(0, 130),
 				BackgroundTransparency = 1,
 				TextTransparency = 1,
@@ -51,6 +52,8 @@ function UserInterface.Start(window: DockWidgetPluginGui)
 					}),
 
 					Toolbar = ToolbarUI(),
+
+					Property = PropertyUI(),
 				},
 			}),
 		},
