@@ -1,7 +1,6 @@
 local library = script.Parent.Parent.Library
 
 local UserInterfaceSystem = require(script.Parent.UserInterface)
-local LoggerSystem = require(script.Parent.Logger)
 
 local Janitor = require(library.Janitor).new()
 local Signal = require(library.Signal)
@@ -49,6 +48,10 @@ function Mouse.Start()
 			return
 		end
 	end))
+end
+
+function Mouse.GetPos()
+	return Vector2.new(Mouse.X, Mouse.Y)
 end
 
 function Mouse.GetDelta(): Vector2
