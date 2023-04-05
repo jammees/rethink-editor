@@ -20,6 +20,7 @@ function UserInterface.Start(window: DockWidgetPluginGui)
 		Parent = window,
 		Size = UDim2.fromScale(1, 1),
 		BackgroundColor3 = Color3.fromRGB(35, 68, 139),
+		ZIndex = -999999999,
 		Name = "Container",
 
 		[Children] = {
@@ -31,7 +32,7 @@ function UserInterface.Start(window: DockWidgetPluginGui)
 			}),
 
 			Detector = New("TextButton")({
-				Size = UDim2.new(1, 0, 1, -ConfigSystem.ui_TopbarOffset:get()),
+				Size = UDim2.new(1, -ConfigSystem.ui_PropertySize:get(), 1, -ConfigSystem.ui_TopbarOffset:get()),
 				Position = UDim2.fromOffset(0, 130),
 				BackgroundTransparency = 1,
 				TextTransparency = 1,
