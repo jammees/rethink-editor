@@ -6,25 +6,27 @@ local LoggerSystem = require(script.Parent.Logger)
 
 local Signal = require(library.Signal)
 local Janitor = require(library.Janitor).new()
-local DefaultProperties = require(script.DefaultProperties)
+local DefaultProperties = require(script["DefaultProperties-v2"])
 
 local entries = {}
 local entriesHash = {}
 
 local Object = {}
 Object.Added = Signal.new()
+Object.MB2Clicked = Signal.new()
 
-function Object.New(type: string)
-	local object = Instance.new("Frame")
+function Object.New(kind: string, class: string)
+	local object = Instance.new(class)
 
 	local objectReference = {
-		Type = type,
+		Type = kind,
 		ExportData = {
 			Properties = {},
 			Symbols = {},
 		},
 		EditorData = {},
 		Object = object,
+		Cleanup = Janitor.new(),
 	}
 
 	for i, v in pairs(DefaultProperties[object.ClassName]) do
@@ -34,6 +36,9 @@ function Object.New(type: string)
 	object.AnchorPoint = Vector2.new(0, 0)
 	object.Position = UDim2.fromOffset(MouseSystem.X, MouseSystem.Y - 130)
 	object.Parent = UserInterfaceSystem.UI.Workspace
+
+	-- Save position
+	objectReference.ExportData.Properties["Position"] = object.Position
 
 	local mouseDetector = Instance.new("TextButton")
 	mouseDetector.BackgroundTransparency = 1
@@ -52,13 +57,22 @@ function Object.New(type: string)
 
 	Object.Added:Fire(object)
 
-	Janitor:Add(object)
-
 	local reservedPosition = #entries + 1
 	entries[reservedPosition] = objectReference
 	entriesHash[object] = reservedPosition
 
-	LoggerSystem.Log(`[Object] Created new {type} at entry: {reservedPosition}`)
+	-- Cleanup
+	Janitor:Add(objectReference.Cleanup)
+	objectReference.Cleanup:Add(object)
+	objectReference.Cleanup:Add(function()
+		entries[reservedPosition] = nil
+		entriesHash[object] = nil
+	end)
+	objectReference.Cleanup:Add(mouseDetector.MouseButton2Click:Connect(function()
+		Object.MB2Clicked:Fire(objectReference)
+	end))
+
+	LoggerSystem.Log(`[Object] Created new {kind} at entry: {reservedPosition}`)
 end
 
 function Object.GetFromObject(object: any)
