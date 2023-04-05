@@ -78,6 +78,10 @@ function Handler.Mount(object: any)
 			reference.EditorData.man_OGSize = object.AbsoluteSize
 			reference.EditorData.man_OGPosition = object.AbsolutePosition
 
+			-- Save changes
+			reference.ExportData.Properties["Position"] = object.Position
+			reference.ExportData.Properties["Size"] = object.Size
+
 			pivotClass.RedrawPoints()
 		end
 	end))
