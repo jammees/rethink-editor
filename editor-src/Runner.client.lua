@@ -9,7 +9,13 @@ local LoggerSystem = require(systems.Logger)
 local PropertyHandlerSystem = require(systems.PropertyHandler)
 
 local toolbar = plugin:CreateToolbar("Editor")
-local editorButton = toolbar:CreateButton("__rethink_editor_button", "Opens/Closes the editor.", "rbxassetid://0")
+local editorButton = toolbar:CreateButton(
+	"__rethink_editor_button",
+	"Opens/Closes the editor.",
+	"rbxassetid://13001346703",
+	"Open Editor"
+)
+editorButton.ClickableWhenViewportHidden = true
 
 local window = plugin:CreateDockWidgetPluginGui(
 	"__rethink_editor_window",
