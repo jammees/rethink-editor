@@ -89,6 +89,9 @@ function Handler.Mount(object: any)
 
 			reference.EditorData.man_OGPosition = object.AbsolutePosition
 
+			-- Save changes
+			reference.ExportData.Properties["Position"] = object.Position
+
 			pivotClass:UpdatePos()
 		end
 	end))
