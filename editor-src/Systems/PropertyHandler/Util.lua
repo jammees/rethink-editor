@@ -2,6 +2,7 @@ local Config = {
 	Range = {
 		Color3 = NumberRange.new(0, 255),
 		Transparency = NumberRange.new(0, 1),
+		BorderSizePixel = NumberRange.new(0, math.huge),
 	},
 }
 
