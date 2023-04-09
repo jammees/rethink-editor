@@ -1,4 +1,3 @@
-local RunService = game:GetService("RunService")
 local library = script.Parent.Parent.Parent.Parent.Library
 local systems = script.Parent.Parent.Parent
 local pivots = script.Parent.Parent.Pivots
