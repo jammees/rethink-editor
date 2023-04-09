@@ -1,3 +1,8 @@
+-- Prevent the plugin running if it's not in the studio environment
+if game:GetService("RunService"):IsRunning() then
+	return warn("Editor can only run in studio!")
+end
+
 local systems = script.Parent.Systems
 
 local UserInterfaceSystem = require(systems.UserInterface)
