@@ -1,10 +1,15 @@
+--[[
+	propertyBase.lua
+
+	An utility handler for property, which accepts another handler for input.
+]]
+
 type Props = {
 	Property: string,
 	Priority: number,
 	Handler: any,
+	Janitor: any,
 }
-
-local DARKENING_SELECTED_AMOUNT_THINGY = 50
 
 local library = script.Parent.Parent.Parent.Parent.Library
 
@@ -14,23 +19,14 @@ local New = Fusion.New
 
 return function(props: Props): Frame
 	-- Edit the handler
-	props.Handler.Size = UDim2.new(1, 0, props.Handler.Size.Y.Scale, props.Handler.Size.Y.Offset)
-	--props.Handler.BackgroundTransparency = 1
+	props.Handler:Get().Size = UDim2.new(1, 0, props.Handler:Get().Size.Y.Scale, props.Handler:Get().Size.Y.Offset)
 
-	local container
-	container = New("Frame")({
+	return New("Frame")({
 		Size = UDim2.new(1, 0, 0, 25),
 		Name = props.Property .. " Listener",
 		BackgroundColor3 = Color3.fromRGB(32, 32, 32),
 		BorderSizePixel = 0,
 		LayoutOrder = props.Priority and props.Priority or 0,
-
-		--[[ [Fusion.OnEvent("MouseEnter")] = function()
-			container.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-		end,
-		[Fusion.OnEvent("MouseLeave")] = function()
-			container.BackgroundColor3 = Color3.fromRGB(32, 32, 32)
-		end, ]]
 
 		[Children] = {
 			Padding = New("UIPadding")({
@@ -63,10 +59,8 @@ return function(props: Props): Frame
 				Position = UDim2.fromScale(0.5, 0),
 				Name = "HandlerContainer",
 
-				[Children] = { props.Handler },
+				[Children] = { props.Handler:Get() },
 			}),
 		},
 	})
-
-	return container
 end
