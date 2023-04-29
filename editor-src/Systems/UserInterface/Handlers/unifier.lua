@@ -1,3 +1,10 @@
+--[[
+	unifier.lua
+
+	An utility handler, which sole purpose is to set all the handlers' sizes to the
+	same size for asthetics.
+]]
+
 -- Makes sure that all of the checkboxes have the same size
 -- so it is more prettier to look at.
 
