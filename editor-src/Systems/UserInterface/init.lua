@@ -16,6 +16,8 @@ UserInterface.UI = nil
 UserInterface.Handlers = script.Handlers
 
 function UserInterface.Start(window: DockWidgetPluginGui)
+	local property = PropertyUI()
+
 	UserInterface.UI = New("Frame")({
 		Parent = window,
 		Size = UDim2.fromScale(1, 1),
@@ -53,8 +55,7 @@ function UserInterface.Start(window: DockWidgetPluginGui)
 					}),
 
 					Toolbar = ToolbarUI(),
-
-					Property = PropertyUI(),
+					Property = property,
 				},
 			}),
 		},
