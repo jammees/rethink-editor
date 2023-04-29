@@ -1,14 +1,16 @@
+local toolbarHandlers = script.Parent.Handlers.Toolbar
 local library = script.Parent.Parent.Parent.Library
 local handlers = script.Parent.Handlers
 
 local ConfigSystem = require(script.Parent.Parent.Config)
 
-local H_toolbarButton = require(handlers.toolbarButton)
-local H_toolbarCategory = require(handlers.toolbarCategory)
-local H_checkbox = require(handlers.checkbox)
-local H_unifier = require(handlers.unifier)
-local H_numberField = require(handlers.numberField)
+local H_toolbarCategory = require(toolbarHandlers.ToolbarCategory)
+local H_toolbarButton = require(toolbarHandlers.ToolbarButton)
+local H_numberField = require(handlers.Property.NumberField)
+local H_checkbox = require(handlers.Property.Checkbox)
+local H_unifier = require(handlers.Unifier)
 
+local ICON_SET = require(script.Parent.ICON_SET)
 local Fusion = require(library.Fusion)
 local Children = Fusion.Children
 local New = Fusion.New
@@ -43,7 +45,7 @@ return function()
 				Handlers = {
 					H_toolbarButton({
 						Title = "Drag",
-						IconIDX = 8,
+						IconIDX = ICON_SET.move,
 						Priority = 1,
 						OnClick = function()
 							if ConfigSystem.man_Mode:get() == 2 then
@@ -56,7 +58,7 @@ return function()
 
 					H_toolbarButton({
 						Title = "Resize",
-						IconIDX = 7,
+						IconIDX = ICON_SET.resize,
 						Priority = 2,
 						OnClick = function()
 							if ConfigSystem.man_Mode:get() == 1 then
@@ -73,20 +75,21 @@ return function()
 						Handlers = {
 							H_unifier({
 								Checkboxes = {
-									H_checkbox({
+									H_checkbox.new({
 										Title = "Snap to Grid",
-										InitialState = false,
-										OnStateChange = function(newState: boolean)
+										InitialValue = false,
+										OnValueChange = function(newState: boolean)
 											ConfigSystem.man_SnapToGrid:set(newState)
 										end,
-									}),
+									}):Get(),
 
-									H_numberField({
+									H_numberField.new({
+										Range = NumberRange.new(0, math.huge),
 										InitialValue = ConfigSystem.man_GridSize:get(),
 										OnValueChange = function(newValue)
 											ConfigSystem.man_GridSize:set(newValue)
 										end,
-									}),
+									}):Get(),
 								},
 
 								Modifiers = {
@@ -98,7 +101,7 @@ return function()
 				},
 			}),
 
-			H_toolbarButton({
+			--[[ H_toolbarButton({
 				Title = "Get export data from",
 				OnClick = function()
 					local ObjectSys = require(script.Parent.Parent.Object)
@@ -217,7 +220,7 @@ return function()
 
 					print(handlerTypes)
 				end,
-			}),
+			}), ]]
 		},
 	})
 
