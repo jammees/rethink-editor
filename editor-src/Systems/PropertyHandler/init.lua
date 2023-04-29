@@ -55,6 +55,7 @@ type Property = {
 ]]
 
 local library = script.Parent.Parent.Library
+local propertyHandlers = script.Parent.UserInterface.Handlers.Property
 
 local SelectorSystem = require(script.Parent.Selector)
 local UserInterfaceSystem = require(script.Parent.UserInterface)
@@ -62,44 +63,50 @@ local ObjectSystem = require(script.Parent.Object)
 
 local Janitor = require(library.Janitor).new()
 local DumpParser = require(library["dump-parser-0.1.1"])
+local FetchDump = require(library["dump-parser-0.1.1"].FetchDump)
 local Util = require(script.Util)
+local ICON_SET = require(script.Parent.UserInterface.ICON_SET)
 
-local serverDump = DumpParser.fetchFromServer()
+local serverDump = nil
 
-local H_propertyBase = require(UserInterfaceSystem.Handlers.propertyBase)
+local H_propertyBase = require(UserInterfaceSystem.Handlers.PropertyBase)
+local H_propertyCategory = require(UserInterfaceSystem.Handlers.PropertyCategory)
 
 local handlers = {
-	H_checkbox = require(UserInterfaceSystem.Handlers.checkbox),
-	H_numberField = require(UserInterfaceSystem.Handlers.numberField),
-	H_colorField = require(UserInterfaceSystem.Handlers.colorField),
+	Checkbox = require(propertyHandlers.Checkbox),
+	NumberField = require(propertyHandlers.NumberField),
+	ColorField = require(propertyHandlers.ColorField),
+	StringField = require(propertyHandlers.StringField),
+	Udim2Field = require(propertyHandlers.Udim2Field),
 }
 
 local propertyWindow = nil
 
-local loadedHandlers = {}
+local handlerCategories = {}
+local cleanupJanitor = Janitor.new()
 
 local PropertyHandler = {}
 
 function PropertyHandler.Clear()
-	for _, handler in loadedHandlers do
-		handler:Destroy()
-	end
+	cleanupJanitor:Cleanup()
+
+	handlerCategories = {}
 end
 
 function PropertyHandler.GetHandlerDef(value: string)
 	if value == "bool" then
-		return "H_checkbox"
+		return "Checkbox"
 	elseif value == "int" or value == "float" then
-		return "H_numberField"
-	elseif value == "Color3" then
-		return "H_colorField"
-	elseif value == "Instance" then
-		return nil
-	elseif value == "Vector2" then
-		return nil
-	elseif value == "UDim2" then
-		return nil
+		return "NumberField"
+	elseif value == "string" then
+		return "StringField"
+		--elseif value == "Color3" then
+		--	return "ColorField"
+		--elseif value == "UDim2" then
+		--	return "H_udim2Field"
 	end
+
+	--print(`{value}({typeof(value)}) has no handler!`)
 
 	return nil
 end
@@ -115,25 +122,60 @@ function PropertyHandler.LoadFrom<OBJ>(object: OBJ)
 			continue
 		end
 
+		if not handlerCategories[data.Category] then
+			local categoryClass = H_propertyCategory.new({ Name = data.Category, Janitor = cleanupJanitor })
+			categoryClass:GetUI().Parent = propertyWindow.Contents
+			handlerCategories[data.Category] = categoryClass
+		end
+
 		local base = H_propertyBase({
 			Property = propName,
-			Handler = handlers[handlerDef]({
-				--Title = propName,
+			Handler = handlers[handlerDef].new({
 				Object = object,
-				InitialState = object[propName],
 				InitialValue = object[propName],
-				OnStateChange = function(newValue: any)
+				Range = Util.GetRangeFromProperty(propName),
+				Janitor = cleanupJanitor,
+				Property = propName,
+				OnValueChange = function(newValue: any)
 					object[propName] = newValue
 					ObjectSystem.GetFromObject(object).ExportData.Properties[propName] = newValue
 				end,
-				Range = Util.GetRangeFromProperty(propName),
 			}),
 		})
 
-		base.Parent = propertyWindow.Contents
+		cleanupJanitor:Add(base)
 
-		table.insert(loadedHandlers, base)
+		handlerCategories[data.Category]:Add(base)
 	end
+end
+
+function PropertyHandler.Init(plugin: Plugin, editorButton: PluginToolbarButton)
+	-- Set icon to download one
+	editorButton.Icon = ICON_SET.editor_button_download
+
+	-- Get setting related to the dump
+	-- if the hash does not match rebuild the dump
+	-- if it does use that dump
+	local savedDump = plugin:GetSetting("__rethink_property_dump")
+
+	local latestHashVersion = FetchDump.fetchLatestVersionHash()
+
+	if savedDump == nil or savedDump.HashVersion ~= latestHashVersion then
+		local rawDump = DumpParser.fetchRawDump(latestHashVersion)
+		serverDump = DumpParser.new(rawDump)
+		plugin:SetSetting("__rethink_property_dump", {
+			Dump = rawDump,
+			HashVersion = latestHashVersion,
+		})
+
+		warn("[Rethink Editor] Saved dump was corrupted or is outdated! Updated dump to the latest one.")
+
+		return
+	end
+
+	serverDump = DumpParser.new(savedDump.Dump)
+
+	editorButton.Icon = ICON_SET.editor_button_default
 end
 
 function PropertyHandler.Start()
