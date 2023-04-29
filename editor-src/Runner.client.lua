@@ -13,14 +13,9 @@ local ManipulationSystem = require(systems.Manipulation)
 local LoggerSystem = require(systems.Logger)
 local PropertyHandlerSystem = require(systems.PropertyHandler)
 
+local ICON_SET = require(systems.UserInterface.ICON_SET)
+
 local toolbar = plugin:CreateToolbar("Editor")
-local editorButton = toolbar:CreateButton(
-	"__rethink_editor_button",
-	"Opens/Closes the editor.",
-	"rbxassetid://13001346703",
-	"Open Editor"
-)
-editorButton.ClickableWhenViewportHidden = true
 
 local window = plugin:CreateDockWidgetPluginGui(
 	"__rethink_editor_window",
@@ -29,10 +24,16 @@ local window = plugin:CreateDockWidgetPluginGui(
 window.Name = "RethinkEditor"
 window.Title = "Rethink Editor v0.1.0"
 
+-- Initialize the button after the dump has been loaded
+local editorButton =
+	toolbar:CreateButton("__rethink_editor_button", "Opens/Closes the editor.", ICON_SET.editor_button_default, "Open")
+editorButton.ClickableWhenViewportHidden = true
+
 -- Initialize systems
 ActionMenuSystem.Init(plugin)
 LoggerSystem.Init(plugin)
 ManipulationSystem.Init()
+PropertyHandlerSystem.Init(plugin, editorButton)
 
 local isOpen = false
 
