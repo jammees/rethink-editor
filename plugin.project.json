@@ -1,11 +1,11 @@
 {
-  "name": "Rethink Engine",
+  "name": "Rethink Engine Plugin",
   "tree": {
     "$className": "DataModel",
 
     "ReplicatedStorage": {
-      "Rethink": {
-        "$path": "src"
+      "Editor":{
+        "$path":"editor-src"
       }
     }
   }

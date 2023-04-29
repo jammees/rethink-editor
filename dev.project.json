@@ -1,0 +1,26 @@
+{
+  "name": "Rethink Engine Dev",
+  "tree": {
+    "$className": "DataModel",
+
+    "ReplicatedStorage": {
+      "Rethink": {
+        "$path": "src"
+      },
+      "Benchmarks": {
+        "$path": "benchmark"
+      },
+      "Unit tests": {
+        "$path": "unit"
+      }
+    },
+
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "Test": {
+          "$path": "test"
+        }
+      }
+    }
+  }
+}
