@@ -1,5 +1,5 @@
-<img align="left" widht=400 height=100 src="./assets/short_dark.png#gh-light-mode-only">
-<img align="left" widht=400 height=100 src="./assets/short_light.png#gh-dark-mode-only">
+<img align="left" widht=400 height=100 src="./assets/dark.png#gh-light-mode-only">
+<img align="left" widht=400 height=100 src="./assets/light.png#gh-dark-mode-only">
 <h3><strong>Versatile, easy-to-use 2D game engine</strong>.</h3>
 1.0.0-alpha release
 

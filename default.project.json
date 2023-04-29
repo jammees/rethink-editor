@@ -4,7 +4,7 @@
     "$className": "DataModel",
 
     "ReplicatedStorage": {
-      "Rethink": {
+      "Editor": {
         "$path": "src"
       }
     }
