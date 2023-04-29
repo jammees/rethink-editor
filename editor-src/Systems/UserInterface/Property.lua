@@ -1,5 +1,4 @@
 local library = script.Parent.Parent.Parent.Library
-local handlers = script.Parent.Handlers
 
 local ConfigSystem = require(script.Parent.Parent.Config)
 
@@ -17,6 +16,7 @@ return function()
 		Name = "Property",
 
 		[Children] = {
+
 			Separator = New("Frame")({
 				Size = UDim2.new(1, 0, 0, 1.5),
 				BackgroundColor3 = Color3.fromRGB(22, 22, 22),
@@ -59,7 +59,7 @@ return function()
 				[Children] = {
 					List = New("UIListLayout")({
 						FillDirection = Enum.FillDirection.Vertical,
-						Padding = UDim.new(0, 5),
+						--Padding = UDim.new(0, 5),
 					}),
 
 					Padding = New("UIPadding")({
