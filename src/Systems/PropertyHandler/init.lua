@@ -29,10 +29,10 @@ type Property = {
 	[ ] GuiObject
 	[x] Color3
 	[ ] BorderMode
-	[ ] Vector2
-	[ ] string
+	[x] Vector2
+	[x] string
 	[ ] AutomaticSize
-	[ ] UDim2
+	[x] UDim2
 	[ ] SelectionBehavior
 	[ ] LocalizationTable
 	[ ] Rect
@@ -41,7 +41,7 @@ type Property = {
 	[ ] ResamplerMode
 	[ ] ButtonStyle
 	[ ] Camera
-	[ ] Vector3
+	[x] Vector3
 	[ ] TextTruncate
 	[ ] TextYAlignment
 	[ ] Font
@@ -60,6 +60,7 @@ local propertyHandlers = script.Parent.UserInterface.Handlers.Property
 local SelectorSystem = require(script.Parent.Selector)
 local UserInterfaceSystem = require(script.Parent.UserInterface)
 local ObjectSystem = require(script.Parent.Object)
+local LoggerSystem = require(script.Parent.LoggerV1)
 
 local Janitor = require(library.Janitor).new()
 local DumpParser = require(library["dump-parser-0.1.1"])
@@ -78,6 +79,9 @@ local handlers = {
 	ColorField = require(propertyHandlers.ColorField),
 	StringField = require(propertyHandlers.StringField),
 	Udim2Field = require(propertyHandlers.Udim2Field),
+	Vector3Field = require(propertyHandlers.Vector3Field),
+	Vector2Field = require(propertyHandlers.Vector2Field),
+	EnumDropdown = require(propertyHandlers.EnumDropdown),
 }
 
 local propertyWindow = nil
@@ -93,22 +97,36 @@ function PropertyHandler.Clear()
 	handlerCategories = {}
 end
 
-function PropertyHandler.GetHandlerDef(value: string)
-	if value == "bool" then
+function PropertyHandler.GetHandlerDef(value: string, item: any)
+	if value == "bool" or value == "boolean" then
 		return "Checkbox"
-	elseif value == "int" or value == "float" then
+	elseif value == "int" or value == "float" or value == "number" then
 		return "NumberField"
 	elseif value == "string" then
 		return "StringField"
-		--elseif value == "Color3" then
-		--	return "ColorField"
-		--elseif value == "UDim2" then
-		--	return "H_udim2Field"
+	elseif value == "Color3" then
+		return "ColorField"
+	elseif value == "UDim2" then
+		return "Udim2Field"
+	elseif value == "Vector3" then
+		return "Vector3Field"
+	elseif value == "Vector2" then
+		return "Vector2Field"
 	end
+
+	if typeof(item) == "EnumItem" then
+		return "EnumDropdown"
+	end
+
+	warn(value)
 
 	--print(`{value}({typeof(value)}) has no handler!`)
 
 	return nil
+end
+
+function PropertyHandler.GetHandler(valueType: string)
+	return handlers[PropertyHandler.GetHandlerDef(valueType)]
 end
 
 function PropertyHandler.LoadFrom<OBJ>(object: OBJ)
@@ -116,7 +134,7 @@ function PropertyHandler.LoadFrom<OBJ>(object: OBJ)
 
 	-- do stuffs
 	for propName, data: Property in objectProperties do
-		local handlerDef = PropertyHandler.GetHandlerDef(data.ValueType.Name)
+		local handlerDef = PropertyHandler.GetHandlerDef(data.ValueType.Name, object[propName])
 
 		if not handlerDef then
 			continue
@@ -139,6 +157,12 @@ function PropertyHandler.LoadFrom<OBJ>(object: OBJ)
 				OnValueChange = function(newValue: any)
 					object[propName] = newValue
 					ObjectSystem.GetFromObject(object).ExportData.Properties[propName] = newValue
+
+					LoggerSystem.Log(
+						"PropertyHandler.lua",
+						1,
+						`{handlerDef}.OnValueChanged => {object}.{propName} = {newValue}`
+					)
 				end,
 			}),
 		})
@@ -158,7 +182,14 @@ function PropertyHandler.Init(plugin: Plugin, editorButton: PluginToolbarButton)
 	-- if it does use that dump
 	local savedDump = plugin:GetSetting("__rethink_property_dump")
 
-	local latestHashVersion = FetchDump.fetchLatestVersionHash()
+	local success, latestHashVersion = pcall(function()
+		return FetchDump.fetchLatestVersionHash()
+	end)
+
+	-- Overwrite the latestHashVersion to use the one we saved
+	if not success then
+		latestHashVersion = savedDump.HashVersion
+	end
 
 	if savedDump == nil or savedDump.HashVersion ~= latestHashVersion then
 		local rawDump = DumpParser.fetchRawDump(latestHashVersion)
