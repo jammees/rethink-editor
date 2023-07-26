@@ -15,7 +15,9 @@ type Props = {
 
 local library = script.Parent.Parent.Parent.Parent.Parent.Library
 
-local ICON_SET = require(script.Parent.Parent.Parent.ICON_SET)
+local ConfigSystem = require(script.Parent.Parent.Parent.Parent.Config).Get()
+
+local Theme = require(script.Parent.Parent.Parent.Themes).GetTheme()
 
 local Fusion = require(library.Fusion)
 local Children = Fusion.Children
@@ -34,12 +36,32 @@ function StringField.new(props: Props)
 
 	local self = setmetatable({}, StringField)
 
+	self.Kind = "StringField"
+
 	self.Props = props
 	self.State = props.InitialValue or 0
+	self.MuteChangedSignal = false
 
 	-- References to UI elements
 	self.InputRef = Value()
+	self.BaseRef = Value()
+
 	self.UI = self:Render()
+
+	if props.Object then
+		self:CleanupIf(
+			props.Janitor,
+			props.Object:GetPropertyChangedSignal(props.Property):Connect(function()
+				if self.MuteChangedSignal then
+					return
+				end
+
+				local newValue: string = props.Object[props.Property]
+
+				self:SetState(newValue)
+			end)
+		)
+	end
 
 	-- Attach connections and cleanup
 	self:CleanupIf(
@@ -64,6 +86,8 @@ function StringField:CleanupIf(statement: boolean, connection: RBXScriptSignal |
 end
 
 function StringField:SetState(newState: number | nil)
+	self.MuteChangedSignal = true
+
 	if newState == nil then
 		Fusion.peek(self.InputRef).Text = self.State
 
@@ -76,26 +100,30 @@ function StringField:SetState(newState: number | nil)
 
 	self.Props.OnValueChange(self.State)
 
+	self.MuteChangedSignal = false
+
 	return self
 end
 
 function StringField:Render()
 	return New("Frame")({
 		Size = UDim2.new(0, 100, 0, 20),
-		BackgroundColor3 = Color3.fromRGB(22, 22, 22),
+		BackgroundColor3 = Theme.BG2,
 		Name = "NumberField",
 		LayoutOrder = self.Props.Priority and self.Props.Priority or 0,
 
+		[Ref] = self.BaseRef,
+
 		[Children] = {
 			Padding = New("UIPadding")({
-				PaddingLeft = UDim.new(0, 3),
+				PaddingLeft = UDim.new(0, ConfigSystem.ui_Property_Handler_Padding_Left:get()),
 			}),
 
 			Input = New("TextBox")({
 				Name = "Input",
 				BackgroundTransparency = 1,
 				Size = UDim2.new(1, 0, 1, 0),
-				TextColor3 = Color3.fromRGB(255, 255, 255),
+				TextColor3 = Theme.Text1,
 				TextXAlignment = Enum.TextXAlignment.Left,
 
 				[Ref] = self.InputRef,
