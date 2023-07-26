@@ -3,6 +3,7 @@ local library = script.Parent.Parent.Library
 local Janitor = require(library.Janitor).new()
 local UserInterfaceSystem = require(script.Parent.UserInterface)
 local ObjectSystem = require(script.Parent.Object)
+local LoggerSystem = require(script.Parent.LoggerV1)
 
 local createObjectMenu = nil
 local MB2actionMenu = nil
@@ -63,7 +64,6 @@ function ActionMenu.Start()
 			local kind = string.find(actionId, "rigid") and "Rigidbody" or "UIBase"
 			local class = string.split(actionId, "_")[#string.split(actionId, "_")]
 
-			print(kind, class)
 			ObjectSystem.New(kind, class)
 		end
 	end))
@@ -72,6 +72,8 @@ function ActionMenu.Start()
 		local selectedAction = MB2actionMenu:ShowAsync()
 		if selectedAction then
 			if selectedAction.Text == "Delete" then
+				LoggerSystem.Log("ActionMenu.lua", 1, `{objectReference.Object} cleaned up!`)
+
 				objectReference.Cleanup:Destroy()
 			end
 		end
