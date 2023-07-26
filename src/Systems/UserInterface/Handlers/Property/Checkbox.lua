@@ -18,7 +18,11 @@ local TextService = game:GetService("TextService")
 
 local library = script.Parent.Parent.Parent.Parent.Parent.Library
 
+local ConfigSystem = require(script.Parent.Parent.Parent.Parent.Config).Get()
+
 local ICON_SET = require(script.Parent.Parent.Parent.ICON_SET)
+
+local Theme = require(script.Parent.Parent.Parent.Themes).GetTheme()
 
 local Fusion = require(library.Fusion)
 local Children = Fusion.Children
@@ -34,18 +38,39 @@ function Checkbox.new(props: Props)
 
 	local self = setmetatable({}, Checkbox)
 
+	self.Kind = "Checkbox"
+
 	self.Props = props
 	self.State = props.InitialValue or false
+	self.MuteChangedSignal = false
 
 	-- References to UI elements
+	self.InputRef = Value()
 	self.CheckmarkRef = Value()
+	self.BaseRef = Value()
+
 	self.UI = self:Render()
+
+	if props.Object then
+		self:CleanupIf(
+			props.Janitor,
+			props.Object:GetPropertyChangedSignal(props.Property):Connect(function()
+				if self.MuteChangedSignal then
+					return
+				end
+
+				local newValue: boolean = props.Object[props.Property]
+
+				self:SetState(newValue)
+			end)
+		)
+	end
 
 	-- Check if Janitor is provided
 	-- Set-up UI logic and cleanup
 	self:CleanupIf(
 		props.Janitor,
-		self.UI.MouseButton1Click:Connect(function()
+		Fusion.peek(self.InputRef).MouseButton1Click:Connect(function()
 			self:SetState(not self.State)
 		end)
 	)
@@ -65,11 +90,15 @@ function Checkbox:CleanupIf(statement: boolean, connection: RBXScriptSignal | RB
 end
 
 function Checkbox:SetState(newState)
+	self.MuteChangedSignal = true
+
 	self.State = newState
 
 	Fusion.peek(self.CheckmarkRef).Visible = newState
 
 	self.Props.OnValueChange(newState)
+
+	self.MuteChangedSignal = false
 
 	return self
 end
@@ -83,24 +112,28 @@ function Checkbox:Render()
 			0,
 			20
 		),
-		BackgroundColor3 = Color3.fromRGB(32, 32, 32),
+		BackgroundTransparency = 1,
 		AutoButtonColor = true,
 		Name = "Checkbox",
 		LayoutOrder = self.Props.Priority and self.Props.Priority or 0,
 
+		[Ref] = self.InputRef,
+
 		[Children] = {
-			Padding = New("UIPadding")({
-				PaddingLeft = UDim.new(0, 3),
+			--[[ Padding = New("UIPadding")({
+				PaddingLeft = UDim.new(0, ConfigSystem.ui_Property_Handler_Padding_Left:get()),
 				--PaddingTop = UDim.new(0, 2.5),
 				--PaddingBottom = UDim.new(0, 5),
-			}),
+			}), ]]
 
 			CheckboxContainer = New("Frame")({
 				Size = UDim2.fromOffset(15, 15),
-				BackgroundColor3 = Color3.fromRGB(22, 22, 22),
+				BackgroundColor3 = Theme.BG2,
 				AnchorPoint = Vector2.new(0, 0.5),
 				Position = UDim2.fromScale(0, 0.5),
 				Name = "CheckboxContainer",
+
+				[Ref] = self.BaseRef,
 
 				[Children] = {
 					Checkmark = New("ImageLabel")({
@@ -112,6 +145,7 @@ function Checkbox:Render()
 						AnchorPoint = Vector2.new(0.5, 0.5),
 						Position = UDim2.fromScale(0.5, 0.5),
 						Visible = self.State,
+						ImageColor3 = Theme.IconColor,
 
 						[Ref] = self.CheckmarkRef,
 					}),
@@ -125,7 +159,7 @@ function Checkbox:Render()
 				AnchorPoint = Vector2.new(0, 0.5),
 				Position = UDim2.new(0, 20, 0.5, 0),
 				Text = self.Props.Title,
-				TextColor3 = Color3.fromRGB(255, 255, 255),
+				TextColor3 = Theme.Text1,
 				TextXAlignment = Enum.TextXAlignment.Left,
 			}),
 		},
