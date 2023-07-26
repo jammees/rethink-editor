@@ -6,156 +6,138 @@
 
 type Props = {
 	OnValueChange: (boolean) -> (),
-	InitialValue: UDim2,
+	InitialValue: boolean,
 	Priority: number,
-	Janitor: any,
 	Object: GuiBase2d,
 	Property: string,
+	Janitor: any,
 }
 
-local USE_COLOR = false
-local DEF_COLOR = Color3.fromRGB(22, 22, 22)
-
 local library = script.Parent.Parent.Parent.Parent.Parent.Library
+
+local ConfigSystem = require(script.Parent.Parent.Parent.Parent.Config).Get()
+
+local NumberField = require(script.Parent.NumberField)
+local Unifier = require(script.Parent.Parent.Unifier)
 
 local Fusion = require(library.Fusion)
 local Children = Fusion.Children
 local New = Fusion.New
 
-function doesOnlyContainNums(inputString)
-	local loweredInput = string.lower(inputString)
+local Udim2Field = {}
+Udim2Field.__index = Udim2Field
 
-	for i = 1, #loweredInput do
-		if string.match(string.sub(loweredInput, i, i), "%d") == nil and string.sub(loweredInput, i, i) ~= "." then
-			return false -- found character that is not a number
-		end
+function Udim2Field.new(props: Props)
+	local self = setmetatable({}, Udim2Field)
+
+	self.Kind = "Udim2Field"
+
+	self.Props = props
+	self.State = {
+		props.InitialValue.X.Scale,
+		props.InitialValue.X.Offset,
+		props.InitialValue.Y.Scale,
+		props.InitialValue.Y.Offset,
+	}
+	self.Handlers = {}
+	self.MuteChangedSignal = false
+
+	self.UI = self:Render()
+
+	if props.Object then
+		self:CleanupIf(
+			props.Janitor,
+			props.Object:GetPropertyChangedSignal(props.Property):Connect(function()
+				if self.MuteChangedSignal then
+					return
+				end
+
+				local newValue: UDim2 = props.Object[props.Property]
+
+				self:SetState({ newValue.X.Scale, newValue.X.Offset, newValue.Y.Scale, newValue.Y.Offset })
+			end)
+		)
 	end
 
-	return true -- all are numbers
+	self:CleanupIf(props.Janitor, self.UI)
+
+	-- Set inital values
+	self:SetState(self.State)
+
+	return self
 end
 
-return function(props: Props)
-	props.OnValueChange = props.OnStateChange ~= nil and props.OnStateChange or props.OnValueChang
-
-	local self = setmetatable({}, {})
-
-	self.XScale = props.InitialValue.X.Scale
-	self.XOffset = props.InitialValue.X.Offset
-	self.YScale = props.InitialValue.Y.Scale
-	self.YOffset = props.InitialValue.Y.Offset
-
-	self.UpdateText = function()
-		self.Object.XScale.Text = tostring(self.XScale)
-		self.Object.XOffset.Text = tostring(self.XOffset)
-		self.Object.YScale.Text = tostring(self.YScale)
-		self.Object.YOffset.Text = tostring(self.YOffset)
+function Udim2Field:CleanupIf(statement: boolean, connection: RBXScriptSignal | RBXScriptConnection)
+	if statement then
+		self.Props.Janitor:Add(connection)
 	end
+end
 
-	self.ValidateValue = function(_, input: number, fieldName: string)
-		local newInput = tonumber(input)
-		local onlyNums = doesOnlyContainNums(string.lower(tostring(newInput)))
+function Udim2Field:SetState(newState: { number })
+	self.MuteChangedSignal = true
 
-		if onlyNums then
-			self[fieldName] = newInput
+	self.State = newState
 
-			props.OnValueChange(UDim2.new(self.XScale, self.XOffset, self.YScale, self.YOffset))
-			self:UpdateText()
-		else
-			props.OnValueChange(UDim2.new(self.XScale, self.XOffset, self.YScale, self.YOffset))
-			self:UpdateText()
+	for i = 1, #self.Handlers do
+		local handlerClass = self.Handlers[i]
+
+		if not handlerClass then
+			continue
 		end
+
+		handlerClass:SetState(self.State[i], true)
 	end
 
-	self.Object = New("Frame")({
+	self.Props.OnValueChange(UDim2.new(table.unpack(self.State)))
+
+	self.MuteChangedSignal = false
+
+	return self
+end
+
+function Udim2Field:Render(): GuiBase2d
+	local container = New("Frame")({
 		Size = UDim2.new(0, 100, 0, 20),
 		BackgroundTransparency = 1,
 		Name = "Udim2Field",
-		LayoutOrder = props.Priority and props.Priority or 0,
+		LayoutOrder = self.Props.Priority and self.Props.Priority or 0,
 
 		[Children] = {
 			List = New("UIListLayout")({
 				FillDirection = Enum.FillDirection.Horizontal,
 				SortOrder = Enum.SortOrder.LayoutOrder,
-				Padding = UDim.new(0, 2.5),
-			}),
-
-			XScale = New("TextBox")({
-				Name = "XScale",
-				Size = UDim2.new(0.25, 0, 1, 0),
-				TextColor3 = Color3.fromHex("F15959"),
-				TextXAlignment = Enum.TextXAlignment.Center,
-				TextYAlignment = Enum.TextYAlignment.Center,
-				BackgroundColor3 = USE_COLOR and Color3.fromHex("DD3F3F") or DEF_COLOR,
-				LayoutOrder = 1,
-
-				[Fusion.OnEvent("FocusLost")] = function()
-					self:ValidateValue(self.Object.XScale.Text, "XScale")
-				end,
-			}),
-
-			XOffset = New("TextBox")({
-				Name = "XOffset",
-				Size = UDim2.new(0.25, 0, 1, 0),
-				TextColor3 = Color3.fromHex("F15959"),
-				TextXAlignment = Enum.TextXAlignment.Center,
-				TextYAlignment = Enum.TextYAlignment.Center,
-				BackgroundColor3 = USE_COLOR and Color3.fromHex("43C538") or DEF_COLOR,
-				LayoutOrder = 2,
-
-				[Fusion.OnEvent("FocusLost")] = function()
-					self:ValidateValue(self.Object.XOffset.Text, "XOffset")
-				end,
-			}),
-
-			YScale = New("TextBox")({
-				Name = "YScale",
-				Size = UDim2.new(0.25, 0, 1, 0),
-				TextColor3 = Color3.fromHex("6CE362"),
-				TextXAlignment = Enum.TextXAlignment.Center,
-				TextYAlignment = Enum.TextYAlignment.Center,
-				BackgroundColor3 = USE_COLOR and Color3.fromHex("385FC5") or DEF_COLOR,
-				LayoutOrder = 3,
-
-				[Fusion.OnEvent("FocusLost")] = function()
-					self:ValidateValue(self.Object.YScale.Text, "YScale")
-				end,
-			}),
-
-			YOffset = New("TextBox")({
-				Name = "YOffset",
-				Size = UDim2.new(0.25, 0, 1, 0),
-				TextColor3 = Color3.fromHex("6CE362"),
-				TextXAlignment = Enum.TextXAlignment.Center,
-				TextYAlignment = Enum.TextYAlignment.Center,
-				BackgroundColor3 = USE_COLOR and Color3.fromHex("385FC5") or DEF_COLOR,
-				LayoutOrder = 3,
-
-				[Fusion.OnEvent("FocusLost")] = function()
-					self:ValidateValue(self.Object.YOffset.Text, "YOffset")
-				end,
+				Padding = UDim.new(0, ConfigSystem.ui_Property_Handler_Padding_Spacer:get()),
 			}),
 		},
 	})
 
-	self:UpdateText()
+	for i = 1, 4 do
+		local handler = NumberField.new({
+			Janitor = self.Props.Janitor or nil,
+			InitialValue = self.State[i],
+			CenteredText = true,
+			Priority = i,
+			Object = self.Props.Object,
+			OnValueChange = function(newValue)
+				local newState = table.clone(self.State)
+				newState[i] = newValue
 
-	-- Add a handler to check if the property we're listening
-	-- to has changed
-	props.Janitor:Add(props.Object:GetPropertyChangedSignal(props.Property):Connect(function()
-		local changedValue: UDim2 = props.Object[props.Property]
+				self:SetState(newState)
+			end,
+		})
 
-		self.XScale = changedValue.X.Scale
-		self.XOffset = changedValue.X.Offset
-		self.YScale = changedValue.Y.Scale
-		self.YOffset = changedValue.Y.Offset
+		handler:Get().Parent = container
 
-		self:UpdateText()
+		self.Handlers[i] = handler
+	end
 
-		props.OnValueChange(changedValue)
-	end))
+	Unifier.relativeSize(Unifier.GetHandlerUIs(self.Handlers), container)
 
-	-- UI cleanup
-	props.Janitor:Add(self.Object)
-
-	return self.Object
+	return container
 end
+
+function Udim2Field:Get()
+	return self.UI
+end
+
+return Udim2Field
