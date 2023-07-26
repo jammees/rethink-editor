@@ -18,6 +18,8 @@ local TextService = game:GetService("TextService")
 
 local library = script.Parent.Parent.Parent.Parent.Parent.Library
 
+local Theme = require(script.Parent.Parent.Parent.Themes).GetTheme()
+
 local Fusion = require(library.Fusion)
 local Children = Fusion.Children
 local New = Fusion.New
@@ -26,7 +28,6 @@ return function(props: Props)
 	local container = New("Frame")({
 		BackgroundTransparency = 1,
 		Size = UDim2.fromScale(0, 1),
-		BackgroundColor3 = Color3.fromRGB(22, 22, 22),
 		Name = "Category",
 		LayoutOrder = props.Priority and props.Priority or 0,
 
@@ -61,7 +62,7 @@ return function(props: Props)
 
 	if props.Separator and props.Separator:find("left") then
 		New("Frame")({
-			BackgroundColor3 = Color3.fromRGB(22, 22, 22),
+			BackgroundColor3 = Theme.BG3,
 			Size = UDim2.new(0, 1.5, 1, 0),
 			Name = "Separator",
 			Parent = container,
@@ -70,7 +71,7 @@ return function(props: Props)
 
 	if props.Separator and props.Separator:find("right") then
 		New("Frame")({
-			BackgroundColor3 = Color3.fromRGB(22, 22, 22),
+			BackgroundColor3 = Theme.BG3,
 			Size = UDim2.new(0, 1.5, 1, 0),
 			Position = UDim2.fromScale(1, 0),
 			Name = "Separator",
@@ -87,7 +88,7 @@ return function(props: Props)
 			Size = UDim2.fromOffset(textSize.X, textSize.Y > 25 and textSize.Y or 25),
 			Position = UDim2.fromScale(0.5, 1),
 			BackgroundTransparency = 1,
-			TextColor3 = Color3.fromRGB(255, 255, 255),
+			TextColor3 = Theme.Text1,
 			Parent = container,
 			Name = "CName",
 		})
