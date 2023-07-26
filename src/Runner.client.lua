@@ -5,13 +5,16 @@ end
 
 local systems = script.Parent.Systems
 
+require(systems.Config).Init(plugin) -- Even if it looks weird that I initiate it here, this needs to have priority
 local UserInterfaceSystem = require(systems.UserInterface)
 local ActionMenuSystem = require(systems.ActionMenu)
 local MouseSystem = require(systems.Mouse)
 local SelectorSystem = require(systems.Selector)
 local ManipulationSystem = require(systems.Manipulation)
-local LoggerSystem = require(systems.Logger)
+local LoggerSystem = require(systems.LoggerV1)
 local PropertyHandlerSystem = require(systems.PropertyHandler)
+local ObjectSystem = require(systems.Object)
+local SettingsHandlerSystem = require(systems.SettingsHandler)
 
 local ICON_SET = require(systems.UserInterface.ICON_SET)
 
@@ -19,7 +22,7 @@ local toolbar = plugin:CreateToolbar("Editor")
 
 local window = plugin:CreateDockWidgetPluginGui(
 	"__rethink_editor_window",
-	DockWidgetPluginGuiInfo.new(Enum.InitialDockState.Float, false, false, 1000, 500, 500, 250)
+	DockWidgetPluginGuiInfo.new(Enum.InitialDockState.Float, false, true, 1000, 500, 500, 250)
 )
 window.Name = "RethinkEditor"
 window.Title = "Rethink Editor v0.1.0"
@@ -34,31 +37,25 @@ ActionMenuSystem.Init(plugin)
 LoggerSystem.Init(plugin)
 ManipulationSystem.Init()
 PropertyHandlerSystem.Init(plugin, editorButton)
+SettingsHandlerSystem.Init(plugin)
 
 local isOpen = false
 
-editorButton.Click:Connect(function()
-	isOpen = not isOpen
+local function Start()
+	LoggerSystem.Start()
+	UserInterfaceSystem.Start(window)
+	ActionMenuSystem.Start()
+	MouseSystem.Start()
+	SelectorSystem.Start()
+	ManipulationSystem.Start()
+	PropertyHandlerSystem.Start()
+	SettingsHandlerSystem.Start()
+	ObjectSystem.Start()
 
-	if isOpen then
-		UserInterfaceSystem.Start(window)
-		ActionMenuSystem.Start()
-		MouseSystem.Start()
-		SelectorSystem.Start()
-		ManipulationSystem.Start()
-		LoggerSystem.Start()
-		PropertyHandlerSystem.Start()
+	ObjectSystem.LoadObjects()
+end
 
-		window.Enabled = true
-
-		LoggerSystem.Log("Successfully initialized systems!")
-
-		return
-	end
-
-	window.Enabled = false
-	LoggerSystem.ToggleConsoleState(false)
-
+local function Destroy()
 	UserInterfaceSystem.Destroy()
 	ActionMenuSystem.Destroy()
 	MouseSystem.Destroy()
@@ -66,4 +63,38 @@ editorButton.Click:Connect(function()
 	ManipulationSystem.Destroy()
 	LoggerSystem.Destroy()
 	PropertyHandlerSystem.Destroy()
+	SettingsHandlerSystem.Destroy()
+	ObjectSystem.Destroy()
+end
+
+editorButton.Click:Connect(function()
+	isOpen = not isOpen
+
+	if isOpen then
+		Start()
+
+		window.Enabled = true
+
+		LoggerSystem.Log("Runner.client.lua", 1, "Successfully initialized systems!")
+
+		return
+	end
+
+	Destroy()
+
+	window.Enabled = false
+	LoggerSystem.ToggleConsoleState(false)
+end)
+
+window:GetPropertyChangedSignal("Enabled"):Connect(function()
+	local state = window.Enabled
+	isOpen = state
+
+	if not isOpen then
+		editorButton:SetActive(false)
+		LoggerSystem.ToggleConsoleState(false, true)
+		Destroy()
+	else
+		editorButton:SetActive(true)
+	end
 end)
