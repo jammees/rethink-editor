@@ -5,11 +5,16 @@ local pivots = script.Parent.Parent.Pivots
 local MouseSystem = require(systems.Mouse)
 local ObjectSystem = require(systems.Object)
 local UserInterfaceSystem = require(systems.UserInterface)
-local ConfigSystem = require(systems.Config)
+local ConfigSystem = require(systems.Config).Get()
 
 local Janitor = require(library.Janitor).new()
 
 local mouseDeltaCounter = Vector2.new()
+
+-- Slightly edited version of the function found in Nature2D
+local function AnchorPointOffset(anchorPoint: Vector2, size: Vector2)
+	return (Vector2.new(0, 0) - anchorPoint) * size
+end
 
 local function Snap(Input)
 	return ConfigSystem.man_SnapToGrid:get()
@@ -81,9 +86,11 @@ function Handler.Mount(object: any)
 		if isDragging == true then
 			man_DragXY(reference, table.unpack(dragDirection))
 
+			local anchorOffset = AnchorPointOffset(reference.Object.anchorPoint, reference.Object.AbsoluteSize)
+
 			object.Position = UDim2.fromOffset(
-				reference.EditorData.man_fPosition.X,
-				reference.EditorData.man_fPosition.Y - ConfigSystem.ui_TopbarOffset:get()
+				reference.EditorData.man_fPosition.X - anchorOffset.X,
+				reference.EditorData.man_fPosition.Y - ConfigSystem.ui_TopbarOffset:get() - anchorOffset.Y
 			)
 
 			reference.EditorData.man_OGPosition = object.AbsolutePosition
