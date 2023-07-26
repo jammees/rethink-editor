@@ -8,6 +8,8 @@ local library = script.Parent.Parent.Parent.Parent.Parent.Library
 
 local UserInterfaceSystem = require(script.Parent.Parent.Parent.Parent.UserInterface)
 
+local Theme = require(script.Parent.Parent.Parent.Parent.UserInterface.Themes).GetTheme()
+
 local ICON_SET = require(script.Parent.Parent.Parent.Parent.UserInterface.ICON_SET)
 local Signal = require(library.Signal)
 local Janitor = require(library.Janitor)
@@ -35,7 +37,7 @@ function DraggerBase.new(object: GuiBase2d)
 			object.AbsolutePosition.X + object.AbsoluteSize.X / 2 - 5.25,
 			object.AbsolutePosition.Y + object.AbsoluteSize.Y / 2 - 5.25
 		),
-		BackgroundColor3 = Color3.fromRGB(221, 215, 39),
+		BackgroundColor3 = Theme.Dragger3,
 		BorderSizePixel = 0,
 		Text = "",
 
@@ -47,11 +49,19 @@ function DraggerBase.new(object: GuiBase2d)
 			self.DragEnd:Fire()
 		end,
 
+		[OnEvent("MouseEnter")] = function()
+			self.XYDragger.BackgroundColor3 = Theme.Dragger3Accent
+		end,
+
+		[OnEvent("MouseLeave")] = function()
+			self.XYDragger.BackgroundColor3 = Theme.Dragger3
+		end,
+
 		[Fusion.Children] = {
 			YDragger = New("ImageButton")({
 				Image = ICON_SET.drag_arrow,
 				BackgroundTransparency = 1,
-				ImageColor3 = Color3.fromHex("54CF49"),
+				ImageColor3 = Theme.Dragger2,
 				Parent = UserInterfaceSystem.UI,
 				ZIndex = 99999991,
 				Name = "YDragger",
@@ -68,16 +78,11 @@ function DraggerBase.new(object: GuiBase2d)
 				end,
 
 				[OnEvent("MouseEnter")] = function()
-					--self.YDragger.ImageColor3 = Color3.fromRGB(47, 136, 39)
-					self.XYDragger.YDragger.ImageColor3 = Color3.fromRGB(
-						84 - DARKENING_SELECTED_AMOUNT_THINGY,
-						207 - DARKENING_SELECTED_AMOUNT_THINGY,
-						73 - DARKENING_SELECTED_AMOUNT_THINGY
-					)
+					self.XYDragger.YDragger.ImageColor3 = Theme.Dragger2Accent
 				end,
 
 				[OnEvent("MouseLeave")] = function()
-					self.XYDragger.YDragger.ImageColor3 = Color3.fromRGB(84, 207, 73)
+					self.XYDragger.YDragger.ImageColor3 = Theme.Dragger2
 				end,
 			}),
 
@@ -85,7 +90,7 @@ function DraggerBase.new(object: GuiBase2d)
 				Image = ICON_SET.drag_arrow,
 				Rotation = 90,
 				BackgroundTransparency = 1,
-				ImageColor3 = Color3.fromRGB(207, 105, 73),
+				ImageColor3 = Theme.Dragger1,
 				Parent = UserInterfaceSystem.UI,
 				ZIndex = 99999991,
 				Name = "XDragger",
@@ -102,15 +107,11 @@ function DraggerBase.new(object: GuiBase2d)
 				end,
 
 				[OnEvent("MouseEnter")] = function()
-					self.XYDragger.XDragger.ImageColor3 = Color3.fromRGB(
-						207 - DARKENING_SELECTED_AMOUNT_THINGY,
-						105 - DARKENING_SELECTED_AMOUNT_THINGY,
-						73 - DARKENING_SELECTED_AMOUNT_THINGY
-					)
+					self.XYDragger.XDragger.ImageColor3 = Theme.Dragger1Accent
 				end,
 
 				[OnEvent("MouseLeave")] = function()
-					self.XYDragger.XDragger.ImageColor3 = Color3.fromRGB(207, 105, 73)
+					self.XYDragger.XDragger.ImageColor3 = Theme.Dragger1
 				end,
 			}),
 		},
