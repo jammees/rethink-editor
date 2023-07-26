@@ -13,6 +13,8 @@ local library = script.Parent.Parent.Parent.Parent.Library
 
 local ICON_SET = require(script.Parent.Parent.ICON_SET)
 
+local Theme = require(script.Parent.Parent.Themes).GetTheme()
+
 local Fusion = require(library.Fusion)
 local Children = Fusion.Children
 local New = Fusion.New
@@ -37,14 +39,14 @@ function propertyCategory.new(props: Props)
 
 	self.Ui = New("Frame")({
 		BackgroundTransparency = 1,
-		Name = "Category",
+		Name = props.Name,
 		Size = UDim2.new(1, 0, 0, 25),
 
 		AutomaticSize = Enum.AutomaticSize.Y,
 
 		[Children] = {
 			ButtonContainer = New("TextButton")({
-				BackgroundColor3 = Color3.fromRGB(22, 22, 22),
+				BackgroundColor3 = Theme.BG1,
 				Size = UDim2.new(1, 0, 0, 25),
 				Name = "ButtonContainer",
 				AutoButtonColor = true,
@@ -64,7 +66,7 @@ function propertyCategory.new(props: Props)
 						Text = props.Name,
 						Size = UDim2.new(1, -13, 1, 0),
 						BackgroundTransparency = 1,
-						TextColor3 = Color3.fromRGB(255, 255, 255),
+						TextColor3 = Theme.Text1,
 						TextXAlignment = Enum.TextXAlignment.Left,
 						TextTruncate = Enum.TextTruncate.AtEnd,
 						Position = UDim2.fromOffset(20, 0),
@@ -78,6 +80,7 @@ function propertyCategory.new(props: Props)
 						Position = UDim2.new(0, 0, 0.5, 0),
 						Name = "Icon",
 						AnchorPoint = Vector2.new(0, 0.5),
+						ImageColor3 = Theme.IconColor,
 						Visible = self.State,
 
 						[Fusion.Ref] = self._IconRef,
@@ -140,6 +143,9 @@ end
 function propertyCategory:GetUI()
 	return self.Ui
 end
+
+-- Alias
+propertyCategory.Get = propertyCategory.GetUI
 
 function propertyCategory:Add(handler: any)
 	handler.Parent = Peek(self._CategoryRef)
