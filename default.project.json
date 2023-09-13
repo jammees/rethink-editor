@@ -3,9 +3,16 @@
   "tree": {
     "$className": "DataModel",
 
-    "ReplicatedStorage": {
+    "ServerStorage": {
       "Editor": {
-        "$path": "src"
+        "$path": "src",
+
+        "Vendors": {
+          "$className": "Folder",
+
+          "Iris-plugin": {"$path": "vendors/Iris-plugin/src/client/Iris"},
+          "GoodSignal": {"$path": "vendors/goodsignal/src"}
+        }
       }
     }
   }

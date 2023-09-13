@@ -1,0 +1,6 @@
+[submodule "Iris-plugin"]
+	path = vendors/Iris-plugin
+	url = https://github.com/jammees/Iris-plugin
+[submodule "goodsignal"]
+	path = vendors/goodsignal
+	url = https://github.com/stravant/goodsignal
