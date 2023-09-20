@@ -1,12 +1,13 @@
 local PluginFramework = require(script.Parent.Parent.Parent.Parent.Library.PluginFramework)
-local Iris = require(script.Parent.Parent.Parent.Parent.Vendors["Iris-plugin"])
-local Utility = require(script.Parent.Parent.Utility)
+local IrisTypes = require(script.Parent.Parent.Parent.Parent.Vendors["Iris-plugin"].Types)
+---@module src.Controllers.UIController
+local UIController = PluginFramework.GetController("UIController")
 
 ---@module src.Controllers.ConfigController
 local ConfigController = PluginFramework.GetController("ConfigController")
 
-return function()
-	local sizeState = Iris.ComputedState(Utility.WidgetSize, function(firstState: Vector2)
+return function(Iris: IrisTypes.Iris)
+	local sizeState = Iris.ComputedState(UIController.WidgetSize, function(firstState: Vector2)
 		return Vector2.new(firstState.X, ConfigController.Config.MenuBarSizeY.value)
 	end)
 

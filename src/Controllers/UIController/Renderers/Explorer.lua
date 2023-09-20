@@ -1,6 +1,6 @@
 local PluginFramework = require(script.Parent.Parent.Parent.Parent.Library.PluginFramework)
-local Iris = require(script.Parent.Parent.Parent.Parent.Vendors["Iris-plugin"])
 local Utility = require(script.Parent.Parent.Utility)
+local IrisTypes = require(script.Parent.Parent.Parent.Parent.Vendors["Iris-plugin"].Types)
 
 ---@module src.Controllers.ConfigController
 local ConfigController = PluginFramework.GetController("ConfigController")
@@ -8,11 +8,13 @@ local ConfigController = PluginFramework.GetController("ConfigController")
 local ObjectController = PluginFramework.GetController("ObjectController")
 ---@module src.Controllers.SelectionController
 local SelectionController = PluginFramework.GetController("SelectionController")
+---@module src.Controllers.UIController
+local UIController = PluginFramework.GetController("UIController")
 
-return function()
+return function(Iris: IrisTypes.Iris)
 	local selectedState = Iris.State(1)
 
-	local sizeState = Iris.ComputedState(Utility.WidgetSize, function(firstState: Vector2)
+	local sizeState = Iris.ComputedState(UIController.WidgetSize, function(firstState: Vector2)
 		return Vector2.new(
 			ConfigController.Config.ExplorerSizeX.value,
 			firstState.Y - ConfigController.Config.MenuBarSizeY.value
