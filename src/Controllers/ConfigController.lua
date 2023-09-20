@@ -53,7 +53,7 @@ function ConfigController:Init()
 	end
 end
 
-function ConfigController:Stop()
+function ConfigController:Save()
 	local rawConfig = {}
 
 	for key, value in self.Config do
@@ -65,6 +65,10 @@ function ConfigController:Stop()
 	end
 
 	self.Framework._Plugin:SetSetting("__rethink_editor_config", RoJSON.Encode(rawConfig))
+end
+
+function ConfigController:Stop()
+	self:Save()
 end
 
 return ConfigController
