@@ -47,8 +47,6 @@ type PluginFrameworkConfigValue = {
 
 local HTTPService = game:GetService("HttpService")
 
-local Log = require(script.Parent.Log)
-
 local ConfigValue = {} :: PluginFrameworkConfigValue
 ConfigValue.__index = ConfigValue
 
@@ -82,6 +80,89 @@ PluginFrameController.__index = PluginFrameController
 
 function PluginFrameController.new(framework: PluginFramework, controllerName: string)
 	return setmetatable({ Framework = framework, Name = controllerName }, PluginFrameController)
+end
+
+local PluginBootDisplay = {}
+PluginBootDisplay.__index = PluginBootDisplay
+
+function PluginBootDisplay.new(PluginFramework: PluginFramework)
+	local self = setmetatable({}, PluginBootDisplay)
+
+	self.Widget = PluginFramework._Plugin:CreateDockWidgetPluginGui(
+		"__rethink_hero_banner",
+		DockWidgetPluginGuiInfo.new(Enum.InitialDockState.Top, true, true, 520, 250, 520, 250)
+	)
+	self.Widget.Title = "Rethink Editor v0.1"
+	self.Widget.Name = "Hero Banner"
+
+	local logo = Instance.new("ImageLabel")
+	logo.Image = "rbxassetid://13001342589"
+	logo.BackgroundTransparency = 1
+	logo.AnchorPoint = Vector2.new(0.5, 0.5)
+	logo.Position = UDim2.fromScale(0.5, 0.5)
+	logo.Size = UDim2.fromOffset(360, 100)
+	logo.Parent = self.Widget
+
+	local progressBarContainer = Instance.new("Frame")
+	progressBarContainer.BackgroundTransparency = 1
+	progressBarContainer.Position = UDim2.fromScale(0.5, 1)
+	progressBarContainer.AnchorPoint = Vector2.new(0.5, 1)
+	progressBarContainer.Size = UDim2.new(1, 0, 0, 25)
+	progressBarContainer.Parent = self.Widget
+
+	local progressBar = Instance.new("Frame")
+	progressBar.BackgroundColor3 = Color3.fromRGB(58, 255, 75)
+	progressBar.BorderSizePixel = 0
+	progressBar.Size = UDim2.fromScale(0, 1)
+	progressBar.Parent = progressBarContainer
+
+	-- local spinningCircle = Instance.new("ImageLabel")
+	-- spinningCircle.Size = UDim2.fromOffset(35, 35)
+	-- spinningCircle.AnchorPoint = Vector2.new(0.5, 0.5)
+	-- spinningCircle.Position = UDim2.fromScale(0.5, 0.5)
+	-- spinningCircle.BackgroundTransparency = 1
+	-- spinningCircle.Image = "rbxassetid://14782115810"
+	-- spinningCircle.Parent = self.Widget
+
+	local statusLabelContainer = Instance.new("Frame")
+	statusLabelContainer.BackgroundTransparency = 1
+	statusLabelContainer.Size = UDim2.new(1, 0, 1, -25)
+	statusLabelContainer.Parent = self.Widget
+
+	local list = Instance.new("UIListLayout")
+	list.VerticalAlignment = Enum.VerticalAlignment.Bottom
+	list.HorizontalAlignment = Enum.HorizontalAlignment.Left
+	list.FillDirection = Enum.FillDirection.Vertical
+	list.Parent = statusLabelContainer
+
+	self.ProgressBar = progressBar
+	-- self.SpinningCircle = spinningCircle
+	self.StatusLabelContainer = statusLabelContainer
+
+	return self
+end
+
+function PluginBootDisplay:CreateStatusLabel(text: string, color: Color3?)
+	local statusLabel = Instance.new("TextLabel")
+	statusLabel.BackgroundTransparency = 1
+	statusLabel.Text = "Something something..."
+	statusLabel.TextColor3 = if color then color else Color3.fromRGB(255, 255, 255)
+	statusLabel.AnchorPoint = Vector2.new(0, 1)
+	statusLabel.Position = UDim2.fromOffset(5, -3)
+	statusLabel.TextSize = 11
+	statusLabel.Size = UDim2.new(1, 0, 0, 25)
+	statusLabel.TextXAlignment = Enum.TextXAlignment.Left
+	statusLabel.Text = text
+	statusLabel.AutomaticSize = Enum.AutomaticSize.Y
+	statusLabel.Parent = self.StatusLabelContainer
+end
+
+function PluginBootDisplay:SetBarPercent(percentage: number)
+	self.ProgressBar.Size = UDim2.fromScale(percentage, 1)
+end
+
+function PluginBootDisplay:Destroy()
+	self.Widget:Destroy()
 end
 
 local PluginFramework = {} :: PluginFramework
@@ -129,18 +210,61 @@ function PluginFramework.CreateController(controllerName: string): PluginFramewo
 end
 
 function PluginFramework.Start()
-	Log.Debug("Starting controllers...")
+	local Display = PluginBootDisplay.new(PluginFramework)
 
-	local s = os.clock()
+	local maxStages = 0
+	local stages = 0
+
+	for _, controller: PluginFrameworkController in PluginFramework._Controllers do
+		if controller.Init then
+			maxStages += 1
+		end
+
+		if controller.Start then
+			maxStages += 1
+		end
+	end
+
+	local function WrapFunction(callback: () -> (), stage: string, controllerName: string)
+		Display:CreateStatusLabel(`{stage} {controllerName}`)
+
+		local success, errorMessage = pcall(function()
+			callback()
+		end)
+
+		if success then
+			stages += 1
+			Display:SetBarPercent(stages / maxStages)
+
+			return 0
+		end
+
+		Display:CreateStatusLabel(
+			`Encountered an error, whilst {stage} {controllerName}:\n{errorMessage}\n\nThis could be a bug! Please file an issue on the GitHub page! If not, please restart the plugin!`,
+			Color3.fromRGB(255, 96, 47)
+		)
+
+		Display.ProgressBar:Destroy()
+		Display.Widget.Title = `Encountered an error!`
+		Display.StatusLabelContainer.Size = Display.StatusLabelContainer.Size + UDim2.fromOffset(0, 25)
+
+		return 1
+	end
 
 	for controllerName, controller: PluginFrameworkController in PluginFramework._Controllers do
 		if not (typeof(controller.Init) == "function") then
 			continue
 		end
 
-		controller.Init(controller)
+		local exitCode = WrapFunction(function()
+			controller.Init(controller, Display)
+		end, "initializing", controllerName)
+		if exitCode == 1 then
+			error("An error has occured whilst initializing! See above widget for more details!")
+			break
+		end
 
-		Log.Debug(`{controllerName} initiated!`)
+		-- controller.Init(controller)
 	end
 
 	for controllerName, controller: PluginFrameworkController in PluginFramework._Controllers do
@@ -149,12 +273,18 @@ function PluginFramework.Start()
 		end
 
 		task.spawn(function()
-			controller.Start(controller)
-			Log.Debug(`{controllerName} started!`)
+			-- controller.Start(controller)
+			local exitCode = WrapFunction(function()
+				controller.Start(controller, Display)
+			end, "starting", controllerName)
+			if exitCode == 1 then
+				error("An error has occured whilst starting! See above widget for more details!")
+				return
+			end
 		end)
 	end
 
-	Log.Debug(`Finished starting controllers in: {os.clock() - s}`)
+	Display:Destroy()
 end
 
 function PluginFramework.Stop()
