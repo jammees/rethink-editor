@@ -8,6 +8,8 @@ function ActionMenuController:Init()
 
 	self.Action = self.Framework._Plugin:CreatePluginMenu("__rethink_editor_menu", "Actions")
 	self.Action:AddNewAction("__rethink_editor_newobj", "Create new object")
+
+	self._Janitor:Add(self.Action)
 end
 
 function ActionMenuController:Start()
