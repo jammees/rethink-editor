@@ -1,6 +1,5 @@
 local PluginFramework = require(script.Parent.Parent.Parent.Parent.Library.PluginFramework)
-local Iris = require(script.Parent.Parent.Parent.Parent.Vendors["Iris-plugin"])
-local Utility = require(script.Parent.Parent.Utility)
+local IrisTypes = require(script.Parent.Parent.Parent.Parent.Vendors["Iris-plugin"].Types)
 
 ---@module src.Controllers.ConfigController
 local ConfigController = PluginFramework.GetController("ConfigController")
@@ -10,45 +9,47 @@ local Parser = ObjectController.Parser
 local ParserTypes = Parser.Types
 ---@module src.Controllers.SelectionController
 local SelectionController = PluginFramework.GetController("SelectionController")
+---@module src.Controllers.UIController
+local UIController = PluginFramework.GetController("UIController")
 
 local cachedProperties = {}
+local objectPropertyStates = {}
+local propertyWidgets = {}
+
+local doUpdate = false
+
+-- Refreshes the properties
+SelectionController.NewSelection:Connect(function()
+	doUpdate = false
+
+	for index, widget: IrisTypes.Widget in propertyWidgets do
+		UIController.Iris.Internal._DiscardWidget(widget)
+		table.remove(propertyWidgets, index)
+	end
+
+	for index, state: IrisTypes.State in objectPropertyStates do
+		table.clear(state.ConnectedFunctions)
+		table.clear(state.ConnectedWidgets)
+		objectPropertyStates[index] = nil
+	end
+
+	-- For some reason if there is no delay after discarding every
+	-- widget then Iris will skip some objects
+	-- when displaying the properties
+	task.wait()
+
+	doUpdate = true
+end)
 
 for name in Parser:GetClasses(Parser.Filter.Invert(Parser.Filter.Deprecated)) do
-	cachedProperties[name] = Parser:GetProperties(name, Parser.Filter.Invert(Parser.Filter.Deprecated))
+	cachedProperties[name] = Parser:GetProperties(
+		name,
+		Parser.Filter.Any(Parser.Filter.Invert(Parser.Filter.Deprecated), Parser.Filter.Invert(Parser.Filter.ReadOnly))
+	)
 end
 
-local function StringifyTable(v, spaces, usesemicolon, depth)
-	if type(v) ~= "table" then
-		return tostring(v)
-	elseif not next(v) then
-		return "{}"
-	end
-
-	spaces = spaces or 4
-	depth = depth or 1
-
-	local space = (" "):rep(depth * spaces)
-	local sep = usesemicolon and ";" or ","
-	local concatenationBuilder = { "{" }
-
-	for k, x in next, v do
-		table.insert(
-			concatenationBuilder,
-			("\n%s[%s] = %s%s"):format(
-				space,
-				type(k) == "number" and tostring(k) or ('"%s"'):format(tostring(k)),
-				StringifyTable(x, spaces, usesemicolon, depth + 1),
-				sep
-			)
-		)
-	end
-
-	local s = table.concat(concatenationBuilder)
-	return ("%s\n%s}"):format(s:sub(1, -2), space:sub(1, -spaces - 1))
-end
-
-return function()
-	local sizeState = Iris.ComputedState(Utility.WidgetSize, function(firstState: Vector2)
+return function(Iris: IrisTypes.Iris)
+	local sizeState = Iris.ComputedState(UIController.WidgetSize, function(firstState: Vector2)
 		return Vector2.new(
 			ConfigController.Config.PropertySizeX.value,
 			firstState.Y - ConfigController.Config.MenuBarSizeY.value
@@ -56,65 +57,26 @@ return function()
 	end)
 
 	local positionState = Iris.ComputedState(ConfigController.Config.MenuBarSizeY, function(firstState: number)
-		return Vector2.new(Utility.WidgetSize:get().X - ConfigController.Config.PropertySizeX:get(), firstState)
+		return Vector2.new(UIController.WidgetSize:get().X - ConfigController.Config.PropertySizeX:get(), firstState)
 	end)
 
-	if not SelectionController.SelectedObject then
-		return
-	end
+	Iris.ComputedState(ConfigController.Config.PropertySizeX, function(firstState: number)
+		sizeState:set(
+			Vector2.new(firstState, UIController.WidgetSize.value.Y - ConfigController.Config.MenuBarSizeY.value)
+		)
+		positionState:set(
+			Vector2.new(UIController.WidgetSize:get().X - firstState, ConfigController.Config.MenuBarSizeY.value)
+		)
+	end)
 
-	local searchString = Iris.State("")
-
-	Iris.Window({ "Debug" })
-	-- for class, properties in cachedProperties do
-	-- 	Iris.Tree({ class })
-	-- 	for _, propertyData: ParserTypes.Property in properties do
-	-- 		Iris.Text({
-	-- 			`[{propertyData.Security.Read}, {propertyData.Security.Write}] {propertyData.Name} = {propertyData.ValueType.Category}/{propertyData.ValueType.Name}`,
-	-- 		})
-	-- 	end
-	-- 	Iris.End()
-	-- end
-	Iris.InputText({ "Search" }, { text = searchString })
-
-	Iris.Separator()
-
-	for class: string, properties in cachedProperties do
-		if not (class:match(searchString:get())) then
-			continue
-		end
-
-		Iris.Tree({ class })
-
-		for propertyName, data: ParserTypes.Property in properties do
-			Iris.Tree({ propertyName })
-
-			Iris.TextWrapped({ StringifyTable(data) })
-			-- 	for dataName, dataValue in data do
-			-- 		Iris.SameLine()
-
-			-- 		if typeof(dataValue) == "table" then
-			-- 			for i, v in dataValue do
-			-- 				Iris.Text({ i })
-			-- 				Iris.Text({ tostring(v) })
-			-- 			end
-
-			-- 			continue
-			-- 		end
-
-			-- 		Iris.Text({ dataName })
-			-- 		Iris.Text({ tostring(dataValue) })
-
-			-- 		Iris.End()
-			-- 	end
-
-			Iris.End()
-		end
-
-		Iris.End()
-	end
-
-	Iris.End()
+	Iris.ComputedState(UIController.WidgetSize, function(firstState)
+		positionState:set(
+			Vector2.new(
+				firstState.X - ConfigController.Config.PropertySizeX:get(),
+				ConfigController.Config.MenuBarSizeY.value
+			)
+		)
+	end)
 
 	Iris.Window({
 		"Property",
@@ -127,61 +89,143 @@ return function()
 
 	-- local propertyStates = {}
 
-	--[[
-		int
-		float
-		bool
-		Color3
-		UDim2
-		Vector2
-		string
-		Enum
-	]]
+	-- --[[
+	-- 	int
+	-- 	float
+	-- 	bool
+	-- 	Color3
+	-- 	UDim2
+	-- 	Vector2
+	-- 	string
+	-- 	Enum
+	-- ]]
+	local function GetPropertyStateAndAttach(propertyName: string)
+		if objectPropertyStates[propertyName] then
+			local state = objectPropertyStates[propertyName]
+			state:set(SelectionController.SelectedObject.Object[propertyName])
+			return state
+		end
+
+		objectPropertyStates[propertyName] = Iris.State(SelectionController.SelectedObject.Object[propertyName])
+
+		objectPropertyStates[propertyName]:onChange(function(newValue: any)
+			pcall(function()
+				SelectionController.SelectedObject.Object[propertyName] = newValue
+			end)
+		end)
+
+		return objectPropertyStates[propertyName]
+	end
+
+	if not SelectionController.SelectedObject or not doUpdate then
+		Iris.End()
+
+		return
+	end
+
+	-- Refresh cache
+	table.clear(propertyWidgets)
+
 	for _, propertyData: ParserTypes.Property in cachedProperties[SelectionController.SelectedObject.Class] do
-		Iris.SameLine()
+		table.insert(
+			propertyWidgets,
+			Iris.Table({
+				2,
+				[Iris.Args.Table.RowBg] = true,
+				[Iris.Args.Table.BordersInner] = false,
+				[Iris.Args.Table.BordersOuter] = false,
+			})
+		)
+		table.insert(propertyWidgets, Iris.Text({ propertyData.Name }))
+		Iris.NextColumn()
+
+		Iris.PushConfig({ ContentWidth = UDim.new(1, 0) })
+
+		if propertyData.ValueType.Name == "bool" then
+			table.insert(
+				propertyWidgets,
+				Iris.Checkbox({ "" }, { isChecked = GetPropertyStateAndAttach(propertyData.Name) })
+			)
+			Iris.PopConfig()
+			Iris.End()
+			continue
+		end
 
 		if propertyData.ValueType.Name == "int" then
-			Iris.InputNum(
-				{ propertyData.Name, [Iris.Args.InputNum.Format] = "%d" },
-				{ number = SelectionController.SelectedObject[propertyData.Name] }
+			table.insert(
+				propertyWidgets,
+				Iris.InputNum(
+					{ "", [Iris.Args.InputNum.Format] = "%d" },
+					{ number = GetPropertyStateAndAttach(propertyData.Name) }
+				)
 			)
+			Iris.PopConfig()
+			Iris.End()
+			continue
 		end
 
 		if propertyData.ValueType.Name == "float" then
-			Iris.InputNum(
-				{ propertyData.Name, [Iris.Args.InputNum.Format] = "%f" },
-				{ number = SelectionController.SelectedObject[propertyData.Name] }
+			table.insert(
+				propertyWidgets,
+				Iris.InputNum(
+					{ "", [Iris.Args.InputNum.Format] = "%.3f" },
+					{ number = GetPropertyStateAndAttach(propertyData.Name) }
+				)
 			)
-		end
-
-		if propertyData.ValueType.Name == "bool" then
-			Iris.Checkbox({ propertyData.Name }, { isChecked = SelectionController.SelectedObject[propertyData.Name] })
-		end
-
-		if propertyData.ValueType.Name == "Color3" then
-			Iris.InputColor3({ propertyData.Name }, { color = SelectionController.SelectedObject[propertyData.Name] })
-		end
-
-		if propertyData.ValueType.Name == "Vector2" then
-			Iris.InputVector2({ propertyData.Name }, { number = SelectionController.SelectedObject[propertyData.Name] })
+			Iris.PopConfig()
+			Iris.End()
+			continue
 		end
 
 		if propertyData.ValueType.Name == "UDim2" then
-			Iris.InputUDim2({ propertyData.Name }, { number = SelectionController.SelectedObject[propertyData.Name] })
+			table.insert(
+				propertyWidgets,
+				Iris.InputUDim2({ "" }, { number = GetPropertyStateAndAttach(propertyData.Name) })
+			)
+			Iris.PopConfig()
+			Iris.End()
+			continue
+		end
+
+		if propertyData.ValueType.Name == "Vector2" then
+			table.insert(
+				propertyWidgets,
+				Iris.InputVector2({ "" }, { number = GetPropertyStateAndAttach(propertyData.Name) })
+			)
+			Iris.PopConfig()
+			Iris.End()
+			continue
 		end
 
 		if propertyData.ValueType.Name == "string" then
-			Iris.InputText({ propertyData.Name }, { text = SelectionController.SelectedObject[propertyData.Name] })
-		end
-
-		if propertyData.ValueType.Name == "Color3" then
-			Iris.InputColor3({ propertyData.Name }, { color = SelectionController.SelectedObject[propertyData.Name] })
+			table.insert(
+				propertyWidgets,
+				Iris.InputText({ "" }, { text = GetPropertyStateAndAttach(propertyData.Name) })
+			)
+			Iris.PopConfig()
+			Iris.End()
+			continue
 		end
 
 		if propertyData.ValueType.Category == "Enum" then
-			Iris.InputEnum({ propertyData.Name }, {}, Enum[propertyData.ValueType.Name])
+			table.insert(
+				propertyWidgets,
+				Iris.ComboEnum(
+					{ "" },
+					{ index = GetPropertyStateAndAttach(propertyData.Name) },
+					Enum[propertyData.ValueType.Name]
+				)
+			)
+			Iris.PopConfig()
+			Iris.End()
+			continue
 		end
 
+		table.insert(
+			propertyWidgets,
+			Iris.Text({ "Not implemented :(", [Iris.Args.Text.Color] = Color3.fromRGB(105, 105, 105) })
+		)
+		Iris.PopConfig()
 		Iris.End()
 	end
 
