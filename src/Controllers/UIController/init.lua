@@ -1,19 +1,18 @@
-local SIZE_X = 1200
-local SIZE_Y = 700
+local SIZE = Vector2.new(1200, 700)
+local MIN_SIZE = Vector2.new(900, 400)
 local INIT_STATE = Enum.InitialDockState.Float
+local WIDGET_INFO = DockWidgetPluginGuiInfo.new(INIT_STATE, false, false, SIZE.X, SIZE.Y, MIN_SIZE.X, MIN_SIZE.Y)
 
 local Types = require(script.Parent.Utility.Types)
 local Signal = require(script.Parent.Parent.Vendors.GoodSignal)
 local IrisModule = require(script.Parent.Parent.Vendors["Iris-plugin"])
 local Janitor = require(script.Parent.Parent.Library.Janitor)
 local PluginFramework = require(script.Parent.Parent.Library.PluginFramework)
-
-local COPromtActive = IrisModule.State(false)
-local SettingsWindowActive = IrisModule.State(false)
+local IrisTypes = require(script.Parent.Parent.Vendors["Iris-plugin"].Types)
 
 local renderes = script.Renderers:GetChildren()
 
-local function GenerateInstances(parent: DockWidgetPluginGui, Iris: typeof(IrisModule))
+local function GenerateInstances(parent: DockWidgetPluginGui, Iris: IrisTypes.Iris)
 	local ClickDetector = Instance.new("TextButton")
 	ClickDetector.Size = UDim2.fromScale(1, 1)
 	ClickDetector.AutoButtonColor = false
@@ -38,20 +37,24 @@ local UIController = PluginFramework.CreateController("UIController")
 function UIController:Init()
 	self._Janitor = Janitor.new()
 
-	self.Widget = self.Framework._Plugin:CreateDockWidgetPluginGui(
-		"__rethink_editor_widget",
-		DockWidgetPluginGuiInfo.new(INIT_STATE, false, false, SIZE_X, SIZE_Y, SIZE_X, SIZE_Y)
-	)
+	self.Widget = self.Framework._Plugin:CreateDockWidgetPluginGui("__rethink_editor_widget", WIDGET_INFO)
 	self.Widget.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-
-	-- Even if enabling the widget while it's initiating is weird
-	-- it's there to prevent Iris from crying about the parent not
-	-- being big enough (It is big enough)
-	self.Widget.Enabled = true
-
-	self.Iris = IrisModule.Init(self.Widget)
-
 	self.Widget.Enabled = false
+
+	if self.Iris then
+		self.Iris.Internal._started = false
+	end
+	self.Iris = IrisModule.Init(self.Widget)
+	self.Iris.Disabled = true
+
+	self.WidgetSize = self.Iris.State(self.Widget.AbsoluteSize)
+
+	UIController.Widget:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+		self.WidgetSize:set(self.Widget.AbsoluteSize)
+	end)
+
+	self.COPromtActive = self.Iris.State(false)
+	self.SettingsWindowActive = self.Iris.State(false)
 
 	self.ClickDetector, self.Workspace = GenerateInstances(self.Widget, self.Iris)
 
@@ -59,10 +62,19 @@ function UIController:Init()
 	self.Widget:GetPropertyChangedSignal("Enabled"):Connect(function()
 		self.WidgetToggled:Fire(self.Widget.Enabled)
 	end)
+
+	self._Janitor:Add(self.Widget)
+	self._Janitor:Add(self.ClickDetector)
+	self._Janitor:Add(self.Workspace)
+	self._Janitor:Add(self.WidgetToggled, "DisconnectAll")
+	self._Janitor:Add(function()
+		self.Iris.Disabled = true
+		table.clear(self.Iris.Internal._connectedFunctions)
+	end)
 end
 
 function UIController:_RenderCOPromt()
-	if not COPromtActive.value then
+	if not self.COPromtActive.value then
 		return
 	end
 
@@ -99,7 +111,7 @@ function UIController:_RenderCOPromt()
 		[self.Iris.Args.Window.NoMove] = true,
 		[self.Iris.Args.Window.NoCollapse] = true,
 		[self.Iris.Args.Window.NoScrollbar] = true,
-	}, { position = positionState, size = sizeState, isOpened = COPromtActive })
+	}, { position = positionState, size = sizeState, isOpened = self.COPromtActive })
 
 	self.Iris.InputText({ "Name" }, { text = nameState })
 	self.Iris.ComboArray({ "Class" }, { index = classState }, { "Frame", "TextLabel", "ImageLabel" })
@@ -111,10 +123,10 @@ function UIController:_RenderCOPromt()
 
 	self.Iris.SameLine()
 	if self.Iris.Button({ "Cancel" }).clicked() then
-		COPromtActive:set(false)
+		self.COPromtActive:set(false)
 	end
 	if self.Iris.Button({ "Done" }).clicked() then
-		COPromtActive:set(false)
+		self.COPromtActive:set(false)
 
 		task.spawn(function()
 			ObjectController:CreateObject(classState.value, kindState.value, { Name = nameState.value })
@@ -193,7 +205,7 @@ function UIController:_RenderToolbarAndMenu()
 	self.Iris.SameLine()
 
 	if self.Iris.Button({ "Settings" }).clicked() then
-		SettingsWindowActive:set(not SettingsWindowActive.value)
+		self.SettingsWindowActive:set(not self.SettingsWindowActive.value)
 	end
 
 	self.Iris.End()
@@ -216,14 +228,105 @@ function UIController:_RenderSettings()
 		self.Iris.UpdateGlobalConfig({ WindowBgTransparency = 0 })
 	end
 
+	self.Iris.SameLine()
+	if self.Iris.Button({ "Restart" }).clicked() then
+		self.Framework.Stop()
+		self.Framework.Start()
+
+		self.Widget.Enabled = true
+	end
+	self.Iris.Text({
+		"Warning: Resetting plugin might cause issues with rendering!",
+		[self.Iris.Args.Text.Color] = Color3.fromRGB(233, 80, 80),
+		[self.Iris.Args.Text.Wrapped] = true,
+	})
+	self.Iris.End()
+
+	if self.Iris.Button({ "Fetch config data" }).clicked() then
+		print(self.ConfigController.Config)
+	end
+
+	self.Iris.Separator()
+
 	for settingName, valueClass in self.ConfigController.Config do
+		self.Iris.Table({
+			3,
+			[self.Iris.Args.Table.RowBg] = false,
+			[self.Iris.Args.Table.BordersInner] = false,
+			[self.Iris.Args.Table.BordersOuter] = false,
+		})
+		self.Iris.Text(`{settingName}`)
+		self.Iris.NextColumn()
+
+		self.Iris.PushConfig({ ContentWidth = UDim.new(1, 0) })
 		if typeof(valueClass.value) == "string" then
-			self.Iris.InputText({ settingName }, { text = valueClass })
+			self.Iris.InputText({ "" }, { text = valueClass })
 		elseif typeof(valueClass.value) == "number" then
-			self.Iris.InputNum({ settingName }, { number = valueClass })
+			self.Iris.InputNum({ "" }, { number = valueClass })
 		elseif typeof(valueClass.value) == "boolean" then
-			self.Iris.Checkbox({ settingName }, { isChecked = valueClass })
+			self.Iris.Checkbox({ "" }, { isChecked = valueClass })
+		elseif typeof(valueClass.value) == "Vector2" then
+			self.Iris.DragVector2({ "" }, { number = valueClass })
+		else
+			self.Iris.Text({ "corrupted", [self.Iris.Args.Text.Color] = Color3.fromRGB(218, 48, 48) })
 		end
+		self.Iris.PopConfig()
+
+		self.Iris.NextColumn()
+
+		local windowOpen = self.Iris.State(false)
+		local selectedType = self.Iris.State("boolean")
+		local value = self.Iris.State("")
+		local supportedValues = { "boolean", "number", "string", "none" }
+
+		if self.Iris.Button({ "Set value" }).clicked() then
+			windowOpen:set(true)
+		end
+
+		self.Iris.Window({ `Set value for {settingName}` }, { isOpened = windowOpen })
+
+		self.Iris.Text({
+			"Mostly a debug menu to more easily edit values that have been corrupted or changed over-time. USE ONLY IF VALUE IS CORRUPTED!",
+			[self.Iris.Args.Text.Wrapped] = true,
+		})
+
+		self.Iris.SameLine()
+
+		if self.Iris.Button({ "Cancel" }).clicked() then
+			windowOpen:set(false)
+		end
+
+		if self.Iris.Button({ "Apply" }).clicked() then
+			windowOpen:set(false)
+
+			local kind = selectedType.value
+			local pValue = value.value
+			local convertedValue
+
+			if kind == "boolean" then
+				convertedValue = if string.lower(pValue) == "true" then true else false
+			elseif kind == "number" then
+				convertedValue = tonumber(pValue)
+			elseif kind == "string" then
+				convertedValue = pValue
+			elseif kind == "none" then
+				convertedValue = {}
+			end
+
+			valueClass:set(convertedValue)
+			self.ConfigController:Save()
+		end
+
+		self.Iris.End()
+
+		self.Iris.Separator()
+
+		self.Iris.ComboArray({ "Value type" }, { index = selectedType }, supportedValues)
+		self.Iris.InputText({ "Value" }, { text = value })
+
+		self.Iris.End()
+
+		self.Iris.End()
 	end
 
 	self.Iris.End()
@@ -255,6 +358,8 @@ function UIController:COPromt()
 end
 
 function UIController:Start()
+	self.Iris.Disabled = false
+
 	self.ObjectController = self.Framework.GetController("ObjectController")
 	self.ConfigController = self.Framework.GetController("ConfigController")
 	self.SelectionController = self.Framework.GetController("SelectionController")
@@ -282,7 +387,7 @@ function UIController:Start()
 		-- self:_RenderProperty()
 
 		for _, module in renderes do
-			require(module)()
+			require(module)(self.Iris)
 		end
 
 		self:_RenderSettings()
