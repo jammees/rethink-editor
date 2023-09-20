@@ -1,5 +1,5 @@
-if not game:GetService("RunService"):IsEdit() then
-	return warn("Editor can only run in studio!")
+if not plugin then
+	return
 end
 
 local WIDGET_BUTTON_DEFAULT = "rbxassetid://13141195759"
@@ -22,8 +22,6 @@ widgetButton.Click:Connect(function()
 	if not isStarted then
 		isStarted = true
 
-		widgetButton.Icon = WIDGET_BUTTON_LOAD
-
 		PluginFramework.LoadControllersDeep(script.Parent.Controllers, "Controller$")
 		PluginFramework.Start()
 
@@ -32,8 +30,6 @@ widgetButton.Click:Connect(function()
 		UIController.WidgetToggled:Connect(function(newState: boolean)
 			widgetButton:SetActive(newState)
 		end)
-
-		widgetButton.Icon = WIDGET_BUTTON_DEFAULT
 	end
 
 	UIController.Widget.Enabled = not UIController.Widget.Enabled
