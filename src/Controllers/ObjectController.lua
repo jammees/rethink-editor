@@ -6,6 +6,7 @@ local PluginFramework = require(script.Parent.Parent.Library.PluginFramework)
 
 -- TEMP
 local DumpParser = require(script.Parent.Parent.Library["dump-parser-0.1.1"])
+local FetchDump = require(script.Parent.Parent.Library["dump-parser-0.1.1"].FetchDump)
 
 local ObjectController = PluginFramework.CreateController("ObjectController")
 
@@ -15,7 +16,21 @@ function ObjectController:Init()
 	self.Objects = {} :: { Types.ObjectData }
 	self.ObjectAdded = Signal.new()
 
-	self.Parser = DumpParser.fetchFromServer()
+	local dumpData = self.Framework._Plugin:GetSetting("__rethink_property_dump") or {}
+	local success, latestHashVersion = pcall(function()
+		return FetchDump.fetchLatestVersionHash()
+	end)
+
+	if not success then
+		latestHashVersion = dumpData.HashVersion
+	end
+
+	if dumpData.HashVersion ~= latestHashVersion then
+		dumpData.Dump = DumpParser.fetchRawDump(latestHashVersion)
+		self.Framework._Plugin:SetSetting("__rethink_property_dump", dumpData)
+	end
+
+	self.Parser = DumpParser.new(dumpData.Dump)
 end
 
 function ObjectController:CreateObject(class: string, kind: string, initProperties: { [string]: any })
