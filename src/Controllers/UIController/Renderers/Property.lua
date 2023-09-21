@@ -45,6 +45,8 @@ for name in Parser:GetClasses(Parser.Filter.Invert(Parser.Filter.Deprecated)) do
 	cachedProperties[name] = Parser:GetProperties(
 		name,
 		Parser.Filter.Any(Parser.Filter.Invert(Parser.Filter.Deprecated), Parser.Filter.Invert(Parser.Filter.ReadOnly))
+		-- Parser.Filter.Any(Parser.Filter.Invert(Parser.Filter.Deprecated), Parser.Filter.Invert(Parser.Filter.ReadOnly))
+		Parser.Filter.Any(Parser.Filter.Invert(Parser.Filter.ReadOnly), Parser.Filter.Deprecated)
 	)
 end
 
