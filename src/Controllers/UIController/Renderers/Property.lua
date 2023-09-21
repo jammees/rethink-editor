@@ -224,6 +224,10 @@ return function(Iris: IrisTypes.Iris)
 		table.insert(
 			propertyWidgets,
 			Iris.Text({ "Not implemented :(", [Iris.Args.Text.Color] = Color3.fromRGB(105, 105, 105) })
+			Iris.Text({
+				`{propertyData.ValueType.Name} ({propertyData.ValueType.Category})`,
+				[Iris.Args.Text.Color] = Color3.fromRGB(105, 105, 105),
+			})
 		)
 		Iris.PopConfig()
 		Iris.End()
