@@ -44,7 +44,6 @@ end)
 for name in Parser:GetClasses(Parser.Filter.Invert(Parser.Filter.Deprecated)) do
 	cachedProperties[name] = Parser:GetProperties(
 		name,
-		Parser.Filter.Any(Parser.Filter.Invert(Parser.Filter.Deprecated), Parser.Filter.Invert(Parser.Filter.ReadOnly))
 		-- Parser.Filter.Any(Parser.Filter.Invert(Parser.Filter.Deprecated), Parser.Filter.Invert(Parser.Filter.ReadOnly))
 		Parser.Filter.Any(Parser.Filter.Invert(Parser.Filter.ReadOnly), Parser.Filter.Deprecated)
 	)
@@ -223,7 +222,6 @@ return function(Iris: IrisTypes.Iris)
 
 		table.insert(
 			propertyWidgets,
-			Iris.Text({ "Not implemented :(", [Iris.Args.Text.Color] = Color3.fromRGB(105, 105, 105) })
 			Iris.Text({
 				`{propertyData.ValueType.Name} ({propertyData.ValueType.Category})`,
 				[Iris.Args.Text.Color] = Color3.fromRGB(105, 105, 105),
