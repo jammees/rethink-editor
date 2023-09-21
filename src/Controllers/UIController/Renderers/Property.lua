@@ -109,9 +109,7 @@ return function(Iris: IrisTypes.Iris)
 		objectPropertyStates[propertyName] = Iris.State(SelectionController.SelectedObject.Object[propertyName])
 
 		objectPropertyStates[propertyName]:onChange(function(newValue: any)
-			pcall(function()
-				SelectionController.SelectedObject.Object[propertyName] = newValue
-			end)
+			SelectionController.SelectedObject.Object[propertyName] = newValue
 		end)
 
 		return objectPropertyStates[propertyName]
