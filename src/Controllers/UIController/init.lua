@@ -41,6 +41,10 @@ function UIController:Init()
 	self.Widget.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	self.Widget.Enabled = false
 
+	self.Widget:BindToClose(function()
+		require(script.Utility).ExitPromtActive:set(true)
+	end)
+
 	if self.Iris then
 		self.Iris.Internal._started = false
 	end
