@@ -10,11 +10,15 @@ local DEFAULT_TEMPLATE = {
 	SelectObjectSize = Vector2.new(350, 600),
 
 	API = "",
+
+	SelectionObjectPromt_Active = false,
+	SelectionObjectPromt_Selected = 0,
 }
 
 local BLACKLIST = {
 	"WidgetTitle",
 	"SelectionObjectPromt_Active",
+	"SelectionObjectPromt_Selected",
 }
 
 -- Finally, my hours haven't been wasted :)
