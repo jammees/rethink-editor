@@ -196,7 +196,7 @@ return function(Iris: IrisTypes.Iris)
 			continue
 		end
 
-		if propertyData.ValueType.Name == "string" then
+		if propertyData.ValueType.Name == "string" or propertyData.ValueType.Name == "Content" then
 			table.insert(
 				propertyWidgets,
 				Iris.InputText({ "" }, { text = GetPropertyStateAndAttach(propertyData.Name) })
