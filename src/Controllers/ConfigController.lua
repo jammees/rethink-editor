@@ -7,6 +7,7 @@ local DEFAULT_TEMPLATE = {
 	ExplorerSizeX = 300,
 	PropertySizeX = 300,
 	CreateNewObjectSize = Vector2.new(350, 165),
+	SelectObjectSize = Vector2.new(350, 600),
 
 	API = "",
 }
