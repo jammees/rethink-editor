@@ -223,6 +223,15 @@ return function(Iris: IrisTypes.Iris)
 			continue
 		end
 
+		if propertyData.ValueType.Name == "Color3" then
+			table.insert(
+				propertyWidgets,
+				Iris.InputColor3({ "" }, { color = GetPropertyStateAndAttach(propertyData.Name) })
+			)
+			Iris.PopConfig()
+			Iris.End()
+			continue
+		end
 		table.insert(
 			propertyWidgets,
 			Iris.Text({
