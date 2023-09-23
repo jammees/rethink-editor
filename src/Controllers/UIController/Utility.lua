@@ -13,5 +13,6 @@ UIController.Widget:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
 end)
 
 Utility.CreateNewObjectActive = Iris.State(false)
+Utility.ExitPromtActive = Iris.State(false)
 
 return Utility
