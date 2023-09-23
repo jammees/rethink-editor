@@ -232,6 +232,27 @@ return function(Iris: IrisTypes.Iris)
 			Iris.End()
 			continue
 		end
+
+		if propertyData.ValueType.Category == "Class" then
+			local selected = Iris.State()
+			local button = Iris.Button({ tostring(GetPropertyStateAndAttach(propertyData.Name).value) })
+			if button.clicked() then
+				selected:set(button.ID)
+				ConfigController.Config.SelectionObjectPromt_Selected:onChange(function(objectIndex)
+					print(objectIndex)
+					local selectedObject = ObjectController.Objects[objectIndex]
+					print(selectedObject.Object)
+					SelectionController.SelectedObject.Object[propertyData.Name] = selectedObject.Object
+					table.clear(ConfigController.Config.SelectionObjectPromt_Selected.ConnectedFunctions)
+				end)
+				ConfigController.Config.SelectionObjectPromt_Active:set(true)
+			end
+			table.insert(propertyWidgets, button)
+			Iris.PopConfig()
+			Iris.End()
+			continue
+		end
+
 		table.insert(
 			propertyWidgets,
 			Iris.Text({
