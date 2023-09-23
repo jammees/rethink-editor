@@ -24,7 +24,6 @@ local BLACKLIST = {
 -- Finally, my hours haven't been wasted :)
 local RoJSON = require(script.Parent.Parent.Library.RoJSON)
 local Iris = require(script.Parent.Parent.Vendors["Iris-plugin"])
-local IrisTypes = require(script.Parent.Parent.Vendors["Iris-plugin"].Types)
 
 local PluginFramework = require(script.Parent.Parent.Library.PluginFramework)
 
