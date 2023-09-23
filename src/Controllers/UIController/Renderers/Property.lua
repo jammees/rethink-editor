@@ -189,7 +189,10 @@ return function(Iris: IrisTypes.Iris)
 		if propertyData.ValueType.Name == "Vector2" then
 			table.insert(
 				propertyWidgets,
-				Iris.InputVector2({ "" }, { number = GetPropertyStateAndAttach(propertyData.Name) })
+				Iris.InputVector2(
+					{ "", [Iris.Args.InputVector2.Format] = "%.3f" },
+					{ number = GetPropertyStateAndAttach(propertyData.Name) }
+				)
 			)
 			Iris.PopConfig()
 			Iris.End()
