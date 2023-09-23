@@ -13,6 +13,7 @@ local DEFAULT_TEMPLATE = {
 
 local BLACKLIST = {
 	"WidgetTitle",
+	"SelectionObjectPromt_Active",
 }
 
 -- Finally, my hours haven't been wasted :)
@@ -31,6 +32,16 @@ function ConfigController:Init()
 
 	for key, value in self.Config do
 		self.Config[key] = Iris.State(value)
+
+		-- corruption check
+		if typeof(self.Config[key]:get()) == typeof(DEFAULT_TEMPLATE[key]) then
+			continue
+		end
+
+		-- warn(
+		-- 	`{key} with value of {value} is corrupted: Types do not match; {typeof(self.Config[key]:get())} ~= {typeof(DEFAULT_TEMPLATE[key])}`
+		-- )
+		self.Config[key]:set(DEFAULT_TEMPLATE[key])
 	end
 
 	for key, value in DEFAULT_TEMPLATE do
