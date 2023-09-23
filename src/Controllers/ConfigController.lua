@@ -25,18 +25,7 @@ local PluginFramework = require(script.Parent.Parent.Library.PluginFramework)
 local ConfigController = PluginFramework.CreateController("ConfigController")
 
 function ConfigController:Init()
-	self.Config = {} :: {
-		WidgetTitle: IrisTypes.State,
-		UITheme: IrisTypes.State,
-		DebugMode: IrisTypes.State,
-
-		MenuBarSizeY: IrisTypes.State,
-		ExplorerSizeX: IrisTypes.State,
-		PropertySizeX: IrisTypes.State,
-		CreateNewObjectSize: IrisTypes.State,
-
-		API: IrisTypes.State,
-	}
+	self.Config = {} :: typeof(DEFAULT_TEMPLATE)
 	self.Config = self.Framework._Plugin:GetSetting("__rethink_editor_config") or "[]"
 	self.Config = RoJSON.Decode(self.Config)
 
