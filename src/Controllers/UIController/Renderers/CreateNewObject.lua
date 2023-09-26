@@ -8,6 +8,8 @@ local ConfigController = PluginFramework.GetController("ConfigController")
 local ObjectController = PluginFramework.GetController("ObjectController")
 ---@module src.Controllers.UIController
 local UIController = PluginFramework.GetController("UIController")
+---@module src.Controllers.SelectionController
+local SelectionController = PluginFramework.GetController("SelectionController")
 
 return function(Iris: IrisTypes.Iris)
 	local nameState = Iris.State("")
@@ -52,7 +54,9 @@ return function(Iris: IrisTypes.Iris)
 		Utility.CreateNewObjectActive:set(false)
 
 		task.spawn(function()
-			ObjectController:CreateObject(classState.value, kindState.value, { Name = nameState.value })
+			SelectionController:ChangeTo(
+				ObjectController:CreateObject(classState.value, kindState.value, { Name = nameState.value })
+			)
 		end)
 
 		nameState:set("")
