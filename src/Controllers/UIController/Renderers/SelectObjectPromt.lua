@@ -67,7 +67,12 @@ return function(Iris: IrisTypes.Iris)
 	local displayedObjects = 0
 
 	for index, object in ObjectController.Objects do
-		if not (object.Object.Name:match(searchedTerm.value)) then
+		if
+			not (object.Object.Name:match(searchedTerm.value))
+			or index == ConfigController.Config.SelectionObjectPromt_Selected.value
+			or object.Parent
+				== ObjectController.Objects[ConfigController.Config.SelectionObjectPromt_Selected.value]
+		then
 			continue
 		end
 
