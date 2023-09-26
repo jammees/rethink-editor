@@ -92,6 +92,8 @@ function ObjectController:CreateObject(class: string, kind: string, initProperti
 	self._Janitor:Add(objectData.Object)
 
 	table.insert(self.Objects, objectData)
+
+	return objectData
 end
 
 function ObjectController:GetPropertiesOf(kind: string)
