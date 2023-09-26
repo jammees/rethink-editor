@@ -280,6 +280,10 @@ return function(Iris: IrisTypes.Iris)
 			local button = Iris.Button({ tostring(GetPropertyStateAndAttach(propertyData.Name).value) })
 			if button.clicked() and selectedClassButton.value == nil then
 				selectedClassButton:set(button.ID)
+
+				ConfigController.Config.SelectionObjectPromt_Selected:set(
+					ObjectController:GetIndexFromObject(SelectionController.SelectedObject.Object)
+				)
 				ConfigController.Config.SelectionObjectPromt_Selected:onChange(function(objectIndex)
 					print(objectIndex)
 					local selectedObject = ObjectController.Objects[objectIndex]
