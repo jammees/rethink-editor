@@ -3,6 +3,8 @@ local Signal = require(script.Parent.Parent.Vendors.GoodSignal)
 local Janitor = require(script.Parent.Parent.Library.Janitor)
 local PluginFramework = require(script.Parent.Parent.Library.PluginFramework)
 
+---@module src.Controllers.ConfigController
+local ConfigController = PluginFramework.GetController("ConfigController")
 local SelectionController = PluginFramework.CreateController("SelectionController")
 
 function SelectionController:Init()
@@ -22,6 +24,9 @@ function SelectionController:Start()
 				if not self.SelectedObject or self.SelectedObject ~= objectData then
 					self.SelectedObject = objectData
 					self.NewSelection:Fire()
+					ConfigController.Config.Explorer_Selected_ID:set(
+						ObjectController:GetIndexFromObject(objectData.Object)
+					)
 				end
 
 				self.Triggered:Fire()
