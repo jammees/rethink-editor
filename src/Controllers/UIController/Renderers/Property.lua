@@ -277,10 +277,7 @@ return function(Iris: IrisTypes.Iris)
 		end
 
 		if propertyData.ValueType.Category == "Class" then
-			local selected = Iris.State()
 			local button = Iris.Button({ tostring(GetPropertyStateAndAttach(propertyData.Name).value) })
-			if button.clicked() then
-				selected:set(button.ID)
 			if button.clicked() and selectedClassButton.value == nil then
 				selectedClassButton:set(button.ID)
 				ConfigController.Config.SelectionObjectPromt_Selected:onChange(function(objectIndex)
