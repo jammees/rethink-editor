@@ -132,6 +132,12 @@ return function(Iris: IrisTypes.Iris)
 
 		objectPropertyStates[propertyName]:onChange(function(newValue: any)
 			SelectionController.SelectedObject.Object[propertyName] = newValue
+
+			if propertyName == "Parent" then
+				return
+			end
+
+			SelectionController.SelectedObject.Properties[propertyName] = newValue
 		end)
 
 		return objectPropertyStates[propertyName]
