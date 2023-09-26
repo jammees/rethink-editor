@@ -17,6 +17,7 @@ local objectPropertyStates = {}
 local propertyWidgets = {}
 
 local doUpdate = false
+local searchedTerm = UIController.Iris.State("")
 
 -- Refreshes the properties
 SelectionController.NewSelection:Connect(function()
@@ -39,6 +40,20 @@ SelectionController.NewSelection:Connect(function()
 	task.wait()
 
 	doUpdate = true
+end
+
+-- Hear me out on this one:
+-- For some reason I have to do this terribleness if I want
+-- to have a search bar for properties. If I would not do this,
+-- widgets would just disappear and overall would not position
+-- properly. This goes for selecting a new object also.
+searchedTerm:onChange(function()
+	doUpdate = false
+
+	task.wait()
+
+	RedrawWidgets()
+end)
 end)
 
 for name in Parser:GetClasses(Parser.Filter.Invert(Parser.Filter.Deprecated)) do
@@ -88,6 +103,9 @@ return function(Iris: IrisTypes.Iris)
 		[Iris.Args.Window.NoResize] = true,
 	}, { size = sizeState, position = positionState })
 
+	Iris.InputText({ "Search" }, { text = searchedTerm })
+	Iris.Separator()
+
 	-- local propertyStates = {}
 
 	-- --[[
@@ -126,6 +144,10 @@ return function(Iris: IrisTypes.Iris)
 	table.clear(propertyWidgets)
 
 	for _, propertyData: ParserTypes.Property in cachedProperties[SelectionController.SelectedObject.Class] do
+		if not (string.lower(propertyData.Name):match(string.lower(searchedTerm.value))) then
+			continue
+		end
+
 		table.insert(
 			propertyWidgets,
 			Iris.Table({
