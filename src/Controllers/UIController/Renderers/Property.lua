@@ -285,9 +285,15 @@ return function(Iris: IrisTypes.Iris)
 					ObjectController:GetIndexFromObject(SelectionController.SelectedObject.Object)
 				)
 				ConfigController.Config.SelectionObjectPromt_Selected:onChange(function(objectIndex)
-					print(objectIndex)
-					local selectedObject = ObjectController.Objects[objectIndex]
-					print(selectedObject.Object)
+					selectedClassButton:set(nil)
+
+					local selectedObject
+					if objectIndex > 0 then
+						selectedObject = ObjectController.Objects[objectIndex]
+					else
+						selectedObject = { Object = UIController.Widget.Workspace }
+					end
+
 					SelectionController.SelectedObject.Object[propertyData.Name] = selectedObject.Object
 					table.clear(ConfigController.Config.SelectionObjectPromt_Selected.ConnectedFunctions)
 					table.clear(ConfigController.Config.SelectionObjectPromt_Active.ConnectedFunctions)
