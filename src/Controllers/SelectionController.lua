@@ -37,6 +37,13 @@ function SelectionController:Start()
 	)
 end
 
+function SelectionController:ChangeTo(objectData)
+	self.SelectedObject = objectData
+	self.NewSelection:Fire()
+	self.Triggered:Fire()
+	ConfigController.Config.Explorer_Selected_ID:set(ObjectController:GetIndexFromObject(objectData.Object))
+end
+
 function SelectionController:Stop()
 	self._Janitor:Destroy()
 end
