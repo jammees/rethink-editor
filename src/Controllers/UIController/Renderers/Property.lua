@@ -19,8 +19,7 @@ local propertyWidgets = {}
 local doUpdate = false
 local searchedTerm = UIController.Iris.State("")
 
--- Refreshes the properties
-SelectionController.NewSelection:Connect(function()
+local function RedrawWidgets()
 	doUpdate = false
 
 	for index, widget: IrisTypes.Widget in propertyWidgets do
@@ -54,6 +53,10 @@ searchedTerm:onChange(function()
 
 	RedrawWidgets()
 end)
+
+-- Refreshes the properties
+SelectionController.NewSelection:Connect(function()
+	RedrawWidgets()
 end)
 
 for name in Parser:GetClasses(Parser.Filter.Invert(Parser.Filter.Deprecated)) do
