@@ -233,6 +233,16 @@ return function(Iris: IrisTypes.Iris)
 			continue
 		end
 
+		if propertyData.ValueType.Name == "Rect" then
+			table.insert(
+				propertyWidgets,
+				Iris.InputRect({ "" }, { number = GetPropertyStateAndAttach(propertyData.Name) })
+			)
+			Iris.PopConfig()
+			Iris.End()
+			continue
+		end
+
 		if propertyData.ValueType.Category == "Class" then
 			local selected = Iris.State()
 			local button = Iris.Button({ tostring(GetPropertyStateAndAttach(propertyData.Name).value) })
