@@ -13,12 +13,15 @@ local DEFAULT_TEMPLATE = {
 
 	SelectionObjectPromt_Active = false,
 	SelectionObjectPromt_Selected = 0,
+
+	Explorer_Selected_ID = 1,
 }
 
 local BLACKLIST = {
 	"WidgetTitle",
 	"SelectionObjectPromt_Active",
 	"SelectionObjectPromt_Selected",
+	"Explorer_Selected_ID",
 }
 
 -- Finally, my hours haven't been wasted :)
