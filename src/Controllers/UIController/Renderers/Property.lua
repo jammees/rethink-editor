@@ -68,6 +68,8 @@ for name in Parser:GetClasses(Parser.Filter.Invert(Parser.Filter.Deprecated)) do
 end
 
 return function(Iris: IrisTypes.Iris)
+	local selectedClassButton = Iris.State()
+
 	local sizeState = Iris.ComputedState(UIController.WidgetSize, function(firstState: Vector2)
 		return Vector2.new(
 			ConfigController.Config.PropertySizeX.value,
@@ -279,6 +281,8 @@ return function(Iris: IrisTypes.Iris)
 			local button = Iris.Button({ tostring(GetPropertyStateAndAttach(propertyData.Name).value) })
 			if button.clicked() then
 				selected:set(button.ID)
+			if button.clicked() and selectedClassButton.value == nil then
+				selectedClassButton:set(button.ID)
 				ConfigController.Config.SelectionObjectPromt_Selected:onChange(function(objectIndex)
 					print(objectIndex)
 					local selectedObject = ObjectController.Objects[objectIndex]
