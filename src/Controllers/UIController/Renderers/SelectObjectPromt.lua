@@ -71,8 +71,13 @@ return function(Iris: IrisTypes.Iris)
 			continue
 		end
 
-		Iris.Table({ 4 })
-
+		Iris.Table({
+			4,
+			[Iris.Args.Table.RowBg] = false,
+			[Iris.Args.Table.BordersInner] = false,
+			[Iris.Args.Table.BordersOuter] = false,
+		})
+		Iris.NextColumn()
 		Iris.Text(object.Object.Name)
 		Iris.NextColumn()
 		Iris.Text(object.Class)
