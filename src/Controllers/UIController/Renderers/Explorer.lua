@@ -25,7 +25,7 @@ return function(Iris: IrisTypes.Iris)
 		return Vector2.new(0, firstState)
 	end)
 
-	Iris.Window({
+	local window = Iris.Window({
 		"Explorer",
 		[Iris.Args.Window.NoCollapse] = true,
 		[Iris.Args.Window.NoClose] = true,
@@ -33,6 +33,13 @@ return function(Iris: IrisTypes.Iris)
 		[Iris.Args.Window.NoScrollbar] = true,
 		[Iris.Args.Window.NoResize] = true,
 	}, { size = sizeState, position = positionState })
+	local childContainer: ScrollingFrame = window.Instance.WindowButton.ChildContainer
+	childContainer.AutomaticCanvasSize = Enum.AutomaticSize.XY
+	childContainer.ScrollBarThickness = 5
+	childContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+	childContainer.TopImage = childContainer.MidImage
+	childContainer.BottomImage = childContainer.MidImage
+	childContainer.ScrollBarImageColor3 = Iris._config.TitleBgActiveColor
 
 	Iris.SameLine()
 	if Iris.Button({ "Create Object" }).clicked() then
