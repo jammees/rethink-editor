@@ -94,7 +94,7 @@ return function(Iris: IrisTypes.Iris)
 			ConfigController.Config.SelectionObjectPromt_Active:set(false)
 			ConfigController.Config.SelectionObjectPromt_Selected:set(0)
 		end
-
+		Iris.NextColumn()
 		Iris.End()
 
 		displayedObjects += 1
