@@ -5,6 +5,9 @@ local PluginFramework = require(script.Parent.Parent.Library.PluginFramework)
 
 ---@module src.Controllers.ConfigController
 local ConfigController = PluginFramework.GetController("ConfigController")
+---@module src.Controllers.ObjectController
+local ObjectController = PluginFramework.GetController("ObjectController")
+
 local SelectionController = PluginFramework.CreateController("SelectionController")
 
 function SelectionController:Init()
@@ -16,8 +19,6 @@ function SelectionController:Init()
 end
 
 function SelectionController:Start()
-	local ObjectController = self.Framework.GetController("ObjectController")
-
 	self._Janitor:Add(
 		ObjectController.ObjectAdded:Connect(function(objectData: Types.ObjectData)
 			self._Janitor:Add(objectData.Object.ClickDetector.MouseButton1Click:Connect(function()
