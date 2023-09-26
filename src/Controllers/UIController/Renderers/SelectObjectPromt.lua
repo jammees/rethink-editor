@@ -34,6 +34,18 @@ return function(Iris: IrisTypes.Iris)
 
 	Iris.Separator()
 
+	Iris.Table({ 4 })
+
+	Iris.Text("Name")
+	Iris.NextColumn()
+	Iris.Text("Class")
+	Iris.NextColumn()
+	Iris.Text("Kind")
+	Iris.NextColumn()
+	Iris.Text("")
+	Iris.NextColumn()
+	-- Iris.NextRow()
+	-- Iris.End()
 	for index, object in ObjectController.Objects do
 		if not (object.Object.Name:match(searchedTerm.value)) then
 			continue
