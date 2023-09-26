@@ -45,6 +45,15 @@ type PluginFrameworkConfigValue = {
 	Destroy: (self: PluginFrameworkConfigValue) -> (),
 }
 
+type PluginBootDisplay = {
+	__index: PluginBootDisplay,
+
+	new: (PluginFramework: PluginFramework) -> PluginBootDisplay,
+	CreateStatusLabel: (self: PluginBootDisplay, text: string, color: Color3) -> PluginBootDisplay,
+	SetBarPercent: (self: PluginBootDisplay, percentage: number) -> (),
+	Destroy: (self: PluginBootDisplay) -> (),
+}
+
 local HTTPService = game:GetService("HttpService")
 
 local ConfigValue = {} :: PluginFrameworkConfigValue
@@ -321,5 +330,6 @@ end
 
 export type Controller = PluginFrameworkController
 export type ConfigValue = PluginFrameworkConfigValue
+export type Display = PluginBootDisplay
 
 return PluginFramework
