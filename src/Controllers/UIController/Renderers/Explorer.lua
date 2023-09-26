@@ -48,14 +48,69 @@ return function(Iris: IrisTypes.Iris)
 	Iris.End()
 	Iris.Separator()
 
-	for index, data in ObjectController.Objects do
-		local objectSelecable = Iris.Selectable({ data.Object.Name, index }, { index = selectedState })
+	local function GenerateButton(index, data)
+		local objectSelectable = Iris.Selectable(
+			{ data.Object.Name, index },
+			{ index = ConfigController.Config.Explorer_Selected_ID }
+		)
+		objectSelectable.Instance.Size = UDim2.fromOffset(
+			ConfigController.Config.ExplorerSizeX.value - Iris._config.WindowPadding.X * 2,
+			objectSelectable.Instance.AbsoluteSize.Y
+		)
 
-		if objectSelecable.selected() then
+		if objectSelectable.selected() then
 			SelectionController.SelectedObject = data
 			SelectionController.NewSelection:Fire()
 			SelectionController.Triggered:Fire()
 		end
+
+		return objectSelectable
+	end
+
+	local function GetDeepness(object: GuiBase2d, carrier: number?)
+		if object.Parent == UIController.Widget.Workspace then
+			return carrier
+		end
+
+		GetDeepness(object.Parent, carrier + 5)
+	end
+
+	local function GetChildrenOf(searchedObject: GuiBase2d)
+		local children = {}
+
+		for _, child in searchedObject:GetChildren() do
+			for _, object in ObjectController.Objects do
+				if not (child == object.Object) then
+					continue
+				end
+
+				table.insert(children, object)
+			end
+		end
+
+		return children
+	end
+
+	local function ParseChildren(childrenData)
+		for _, data in childrenData do
+			Iris.Indent(GetDeepness(data.Object, 0))
+			GenerateButton(ObjectController:GetIndexFromObject(data.Object), data)
+
+			local children = GetChildrenOf(data.Object)
+
+			if #children > 0 then
+				ParseChildren(children)
+			end
+			Iris.End()
+		end
+	end
+
+	for _, data in ObjectController.Objects do
+		if data.Object.Parent ~= UIController.Widget.Workspace then
+			continue
+		end
+
+		ParseChildren({ data })
 	end
 
 	Iris.End()
