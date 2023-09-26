@@ -298,6 +298,10 @@ return function(Iris: IrisTypes.Iris)
 					table.clear(ConfigController.Config.SelectionObjectPromt_Active.ConnectedFunctions)
 				end)
 			end
+			if selectedClassButton.value == button.ID then
+				button.Instance.Text = "Awaiting..."
+			else
+				button.Instance.Text = tostring(GetPropertyStateAndAttach(propertyData.Name).value)
 			end
 			table.insert(propertyWidgets, button)
 			Iris.PopConfig()
