@@ -285,8 +285,15 @@ return function(Iris: IrisTypes.Iris)
 					print(selectedObject.Object)
 					SelectionController.SelectedObject.Object[propertyData.Name] = selectedObject.Object
 					table.clear(ConfigController.Config.SelectionObjectPromt_Selected.ConnectedFunctions)
+					table.clear(ConfigController.Config.SelectionObjectPromt_Active.ConnectedFunctions)
 				end)
 				ConfigController.Config.SelectionObjectPromt_Active:set(true)
+				ConfigController.Config.SelectionObjectPromt_Active:onChange(function()
+					selectedClassButton:set(nil)
+					table.clear(ConfigController.Config.SelectionObjectPromt_Selected.ConnectedFunctions)
+					table.clear(ConfigController.Config.SelectionObjectPromt_Active.ConnectedFunctions)
+				end)
+			end
 			end
 			table.insert(propertyWidgets, button)
 			Iris.PopConfig()
