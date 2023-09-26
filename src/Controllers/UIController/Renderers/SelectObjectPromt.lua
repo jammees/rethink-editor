@@ -46,6 +46,23 @@ return function(Iris: IrisTypes.Iris)
 	Iris.NextColumn()
 	-- Iris.NextRow()
 	-- Iris.End()
+
+	-- Iris.Table({ 4 })
+	Iris.Text("Workspace")
+	Iris.NextColumn()
+	Iris.Text("Frame")
+	Iris.NextColumn()
+	Iris.Text("PluginContainer")
+	Iris.NextColumn()
+	if Iris.Button("Select").clicked() then
+		ConfigController.Config.SelectionObjectPromt_Selected:set(-1)
+		ConfigController.Config.SelectionObjectPromt_Active:set(false)
+		ConfigController.Config.SelectionObjectPromt_Selected:set(0)
+	end
+	Iris.NextColumn()
+	Iris.End()
+	-- Iris.NextRow()
+	-- Iris.End()
 	for index, object in ObjectController.Objects do
 		if not (object.Object.Name:match(searchedTerm.value)) then
 			continue
