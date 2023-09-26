@@ -10,7 +10,7 @@ local FetchDump = require(script.Parent.Parent.Library["dump-parser-0.1.1"].Fetc
 
 local ObjectController = PluginFramework.CreateController("ObjectController")
 
-function ObjectController:Init()
+function ObjectController:Init(display: PluginFramework.Display)
 	self._Janitor = Janitor.new()
 
 	self.Objects = {} :: { Types.ObjectData }
@@ -21,11 +21,17 @@ function ObjectController:Init()
 		return FetchDump.fetchLatestVersionHash()
 	end)
 
+	display:CreateStatusLabel(latestHashVersion, Color3.fromRGB(184, 156, 3))
+
 	if not success then
+		display:CreateStatusLabel("Failed to fetch latest hash version, using saved API data!")
+
 		latestHashVersion = dumpData.HashVersion
 	end
 
 	if dumpData.HashVersion ~= latestHashVersion then
+		display:CreateStatusLabel("Saved API data is out-dated! Rebuilding...")
+
 		dumpData.Dump = DumpParser.fetchRawDump(latestHashVersion)
 		self.Framework._Plugin:SetSetting("__rethink_property_dump", dumpData)
 	end
