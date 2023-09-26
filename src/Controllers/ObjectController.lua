@@ -39,6 +39,18 @@ function ObjectController:Init(display: PluginFramework.Display)
 	self.Parser = DumpParser.new(dumpData.Dump)
 end
 
+function ObjectController:GetIndexFromObject(searchedObject)
+	for index, object in self.Objects do
+		if object.Object == searchedObject then
+			return index
+		end
+	end
+
+	error("Could not find object!")
+
+	return -1
+end
+
 function ObjectController:CreateObject(class: string, kind: string, initProperties: { [string]: any })
 	local UIController = self.Framework.GetController("UIController")
 
