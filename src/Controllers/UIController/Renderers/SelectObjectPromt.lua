@@ -63,6 +63,9 @@ return function(Iris: IrisTypes.Iris)
 	Iris.End()
 	-- Iris.NextRow()
 	-- Iris.End()
+
+	local displayedObjects = 0
+
 	for index, object in ObjectController.Objects do
 		if not (object.Object.Name:match(searchedTerm.value)) then
 			continue
@@ -83,6 +86,15 @@ return function(Iris: IrisTypes.Iris)
 		end
 
 		Iris.End()
+
+		displayedObjects += 1
+	end
+
+	if displayedObjects == 0 then
+		Iris.Text({
+			`Could not find any object that matched: {searchedTerm.value}. Are you sure, you spelled the name correctly?`,
+			[Iris.Args.Text.Wrapped] = true,
+		})
 	end
 
 	Iris.End()
