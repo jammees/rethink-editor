@@ -11,6 +11,20 @@ local SelectionController = PluginFramework.GetController("SelectionController")
 ---@module src.Controllers.UIController
 local UIController = PluginFramework.GetController("UIController")
 
+--FIXME: objectSelectable does not render correctly in some scenarious
+-- such as parenting an object which has a children already to a
+-- different object.
+--NOTE: This could maybe be fixed by re-rendering everything in the explorer when the hierarchy
+-- changes
+-- more experimentation is required :)
+--NOTE 2: Should clean up all of the rendering code
+--NOTE 3: Add an abstract class for rendering promts
+
+local Explorer = {}
+
+Explorer.Priority = 00001
+
+function Explorer.Render(Iris: IrisTypes.Iris)
 	local selectedState = Iris.State(1)
 
 	local sizeState = Iris.ComputedState(UIController.WidgetSize, function(firstState: Vector2)
