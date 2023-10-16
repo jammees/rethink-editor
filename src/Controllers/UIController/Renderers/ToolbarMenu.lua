@@ -6,7 +6,11 @@ local UIController = PluginFramework.GetController("UIController")
 ---@module src.Controllers.ConfigController
 local ConfigController = PluginFramework.GetController("ConfigController")
 
-return function(Iris: IrisTypes.Iris)
+local ToolbarMenu = {}
+
+ToolbarMenu.Priority = 00003
+
+function ToolbarMenu.Render(Iris: IrisTypes.Iris)
 	local sizeState = Iris.ComputedState(UIController.WidgetSize, function(firstState: Vector2)
 		return Vector2.new(firstState.X, ConfigController.Config.MenuBarSizeY.value)
 	end)
@@ -28,3 +32,5 @@ return function(Iris: IrisTypes.Iris)
 
 	Iris.End()
 end
+
+return ToolbarMenu

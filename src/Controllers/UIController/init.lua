@@ -10,8 +10,6 @@ local Janitor = require(script.Parent.Parent.Library.Janitor)
 local PluginFramework = require(script.Parent.Parent.Library.PluginFramework)
 local IrisTypes = require(script.Parent.Parent.Vendors["Iris-plugin"].Types)
 
-local renderes = script.Renderers:GetChildren()
-
 local function GenerateInstances(parent: DockWidgetPluginGui, Iris: IrisTypes.Iris)
 	local ClickDetector = Instance.new("TextButton")
 	ClickDetector.Size = UDim2.fromScale(1, 1)
@@ -66,6 +64,12 @@ function UIController:Init()
 	self.Widget:GetPropertyChangedSignal("Enabled"):Connect(function()
 		self.WidgetToggled:Fire(self.Widget.Enabled)
 	end)
+
+	self.Renderers = {}
+	for _, renderer in script.Renderers:GetChildren() do
+		local Renderer = require(renderer)
+		self.Renderers[Renderer.Priority] = Renderer
+	end
 
 	self._Janitor:Add(self.Widget)
 	self._Janitor:Add(self.ClickDetector)
@@ -390,8 +394,8 @@ function UIController:Start()
 		-- self:_RenderToolbarAndMenu()
 		-- self:_RenderProperty()
 
-		for _, module in renderes do
-			require(module)(self.Iris)
+		for _, module in self.Renderers do
+			module.Render(self.Iris)
 		end
 
 		self:_RenderSettings()

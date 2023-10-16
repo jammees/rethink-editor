@@ -11,7 +11,11 @@ local UIController = PluginFramework.GetController("UIController")
 ---@module src.Controllers.SelectionController
 local SelectionController = PluginFramework.GetController("SelectionController")
 
-return function(Iris: IrisTypes.Iris)
+local CreateNewObject = {}
+
+CreateNewObject.Priority = 10000
+
+function CreateNewObject.Render(Iris: IrisTypes.Iris)
 	local nameState = Iris.State("")
 	local kindState = Iris.State("UIbase")
 	local classState = Iris.State("Frame")
@@ -67,3 +71,5 @@ return function(Iris: IrisTypes.Iris)
 
 	Iris.End()
 end
+
+return CreateNewObject

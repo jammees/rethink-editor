@@ -11,7 +11,6 @@ local SelectionController = PluginFramework.GetController("SelectionController")
 ---@module src.Controllers.UIController
 local UIController = PluginFramework.GetController("UIController")
 
-return function(Iris: IrisTypes.Iris)
 	local selectedState = Iris.State(1)
 
 	local sizeState = Iris.ComputedState(UIController.WidgetSize, function(firstState: Vector2)
@@ -115,3 +114,5 @@ return function(Iris: IrisTypes.Iris)
 
 	Iris.End()
 end
+
+return Explorer

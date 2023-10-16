@@ -7,7 +7,11 @@ local ConfigController = PluginFramework.GetController("ConfigController")
 ---@module src.Controllers.UIController
 local UIController = PluginFramework.GetController("UIController")
 
-return function(Iris: IrisTypes.Iris)
+local ExitPromt = {}
+
+ExitPromt.Priority = 10001
+
+function ExitPromt.Render(Iris: IrisTypes.Iris)
 	local positionState = Iris.ComputedState(UIController.WidgetSize, function(firstState: Vector2)
 		local size = ConfigController.Config.CreateNewObjectSize:get()
 
@@ -39,3 +43,5 @@ return function(Iris: IrisTypes.Iris)
 
 	Iris.End()
 end
+
+return ExitPromt

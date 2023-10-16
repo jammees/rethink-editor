@@ -9,7 +9,11 @@ local UIController = PluginFramework.GetController("UIController")
 ---@module src.Controllers.ObjectController
 local ObjectController = PluginFramework.GetController("ObjectController")
 
-return function(Iris: IrisTypes.Iris)
+local SelectObjectPromt = {}
+
+SelectObjectPromt.Priority = 10002
+
+function SelectObjectPromt.Render(Iris: IrisTypes.Iris)
 	local positionState = Iris.ComputedState(UIController.WidgetSize, function(firstState: Vector2)
 		local size = ConfigController.Config.SelectObjectSize:get()
 
@@ -109,3 +113,5 @@ return function(Iris: IrisTypes.Iris)
 
 	Iris.End()
 end
+
+return SelectObjectPromt

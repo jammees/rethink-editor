@@ -67,7 +67,11 @@ for name in Parser:GetClasses(Parser.Filter.Invert(Parser.Filter.Deprecated)) do
 	)
 end
 
-return function(Iris: IrisTypes.Iris)
+local Property = {}
+
+Property.Priority = 00002
+
+function Property.Render(Iris: IrisTypes.Iris)
 	local selectedClassButton = Iris.State()
 
 	local sizeState = Iris.ComputedState(UIController.WidgetSize, function(firstState: Vector2)
@@ -329,3 +333,5 @@ return function(Iris: IrisTypes.Iris)
 
 	Iris.End()
 end
+
+return Property
